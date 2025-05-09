@@ -1,8 +1,9 @@
 package org.egg.license3j_spring;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +39,12 @@ public class LicenseService {
 		public File saveLicense(String licenseName, IOFormat format) throws ResponseStatusException {
 			if (license == null) {
 				logger.error("No license in memory. Please create or load a license");
-				throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED, "No license in memory. Please create or load a license");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license in memory. Please create or load a license");
 			} 
 			
 			if(licenseToSign) {
 				logger.error("License needs to be signed before saving");
-				throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED, "License needs to be signed before saving");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "License needs to be signed before saving");
 			}
 			
 			File f = new File(licenseName);
@@ -55,6 +56,22 @@ public class LicenseService {
 			} catch (IOException e) {
 				logger.error(String.valueOf(e));
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occured during writing the license");
+			}
+		}
+		
+		// dump license to screen
+		public String displayLicense() throws ResponseStatusException {
+			if (license == null) {
+				logger.error("No license in memory. Please create or load a license");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license in memory. Please create or load a license");
+			}
+
+			try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); LicenseWriter lw = new LicenseWriter(baos)) {
+				lw.write(license, IOFormat.STRING);
+				return baos.toString(StandardCharsets.UTF_8);
+			} catch (IOException e) {
+				logger.error(String.valueOf(e));
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "A problem occured during writing license bytes");
 			}
 		}
 

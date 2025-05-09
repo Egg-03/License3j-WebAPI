@@ -31,6 +31,8 @@ public class LicenseController {
 		}
 	}
 	
+	// example usage: http://localhost:8080/api/license/new
+	
 	@GetMapping("/license/save")
 	public ResponseEntity<File> saveLicense(@RequestParam String licenseName, @RequestParam String format) {
 		
@@ -50,5 +52,17 @@ public class LicenseController {
 		}
 	}
 	// example usage: http://localhost:8080/api/license/save?licenseName=egg.bin&format=BINARY
+	
+	@GetMapping("/license/show")
+	public ResponseEntity<String> showLicense() {
+		try {
+			String license = ls.displayLicense();
+			return ResponseEntity.ok(license);
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body("N/A");
+		}
+	}
+	
+	// example usage: http://localhost:8080/api/license/show
 
 }
