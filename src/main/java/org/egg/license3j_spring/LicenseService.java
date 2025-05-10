@@ -3,6 +3,7 @@ package org.egg.license3j_spring;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax0.license3j.License;
 import javax0.license3j.crypto.LicenseKeyPair;
 import javax0.license3j.io.IOFormat;
+import javax0.license3j.io.LicenseReader;
 import javax0.license3j.io.LicenseWriter;
 
 public class LicenseService {
@@ -21,6 +23,7 @@ public class LicenseService {
 	private boolean licenseToSave = false;
 	private boolean licenseToSign = false;
 	private LicenseKeyPair keyPair;
+	
 	private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
 
 	// generate a new license if there are no previously unsaved licenses
@@ -44,17 +47,17 @@ public class LicenseService {
 			
 			if(licenseToSign) {
 				logger.error("License needs to be signed before saving");
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "License needs to be signed before saving");
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "License needs to be signed before saving");
 			}
 			
 			File f = new File(licenseName);
 			try (LicenseWriter writer = new LicenseWriter(f)) {
 				writer.write(license, format);
 				licenseToSave = false;
-				logger.info("");
+				logger.info("License Written Successfully");
 				return f;
 			} catch (IOException e) {
-				logger.error(String.valueOf(e));
+				logger.error(e.getMessage(), e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occured during writing the license");
 			}
 		}
@@ -70,9 +73,27 @@ public class LicenseService {
 				lw.write(license, IOFormat.STRING);
 				return baos.toString(StandardCharsets.UTF_8);
 			} catch (IOException e) {
-				logger.error(String.valueOf(e));
+				logger.error(e.getMessage(), e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "A problem occured during writing license bytes");
 			}
+		}
+		
+		// load an existing license
+		public void loadLicense(InputStream licenseInputStream, IOFormat format) throws ResponseStatusException {
+			if (licenseToSave) {
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "Unsaved license detected in memory. Please save the license first.");
+			}
+
+			try (LicenseReader reader = new LicenseReader(licenseInputStream)) {
+				license = reader.read(format);
+				licenseToSave = false;
+				licenseToSign = false;
+				logger.info("License is loaded in memory.");
+			} catch (IOException e) {
+				logger.error(String.valueOf(e));
+				e.printStackTrace();
+				throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "A problem occured during loading the license from file");
+			} 
 		}
 
 }
