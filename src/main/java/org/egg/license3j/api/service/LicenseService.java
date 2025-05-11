@@ -1,4 +1,4 @@
-package org.egg.license3j_spring;
+package org.egg.license3j.api.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+
+import org.egg.license3j.api.constants.FeatureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,14 +19,6 @@ import javax0.license3j.crypto.LicenseKeyPair;
 import javax0.license3j.io.IOFormat;
 import javax0.license3j.io.LicenseReader;
 import javax0.license3j.io.LicenseWriter;
-
-enum FeatureTypes{
-	STRING, BINARY, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BIGINTEGER, BIGDECIMAL, DATE, UUID
-}
-
-enum EncryptionAlgorithm {
-	RSA, ECB, PKCS1Padding
-}
 
 
 public class LicenseService {
@@ -107,7 +101,7 @@ public class LicenseService {
 		}
 		
 		// add features to a license
-		public void addFeature(String featureName, FeatureTypes type, String featureContent) throws ResponseStatusException {
+		public void addFeature(String featureName, FeatureType type, String featureContent) throws ResponseStatusException {
 			if (license == null) {
 				logger.error("No license in memory. Feature cannot be added.");
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license in memory. Please create or load a license");
@@ -120,15 +114,15 @@ public class LicenseService {
 		}
 		
 		// will generate a private-key public-key pair and load it in memory
-		private void generateKeys(EncryptionAlgorithm algorithm, int size) throws NoSuchAlgorithmException {
-				keyPair = LicenseKeyPair.Create.from(algorithm.name(), size);
+		private void generateKeys(String algorithm, int size) throws NoSuchAlgorithmException {
+				keyPair = LicenseKeyPair.Create.from(algorithm, size);
 				logger.info("Private and Public Keys loaded in memory");
 		}
 
 		// will save the loaded keys to file
 		// uses the generateKeys() method internally
 
-		public void generate(EncryptionAlgorithm algorithm, int size) throws ResponseStatusException {
+		public void generate(String algorithm, int size) throws ResponseStatusException {
 			
 			try {
 				generateKeys(algorithm, size);

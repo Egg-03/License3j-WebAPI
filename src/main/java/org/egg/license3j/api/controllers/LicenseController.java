@@ -1,8 +1,10 @@
-package org.egg.license3j_spring;
+package org.egg.license3j.api.controllers;
 
 import java.io.File;
 import java.io.IOException;
 
+import org.egg.license3j.api.constants.FeatureType;
+import org.egg.license3j.api.service.LicenseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -87,7 +89,7 @@ public class LicenseController {
 	}
 	
 	@PostMapping("/license/addfeature")
-	public ResponseEntity<String> addFeature(@RequestParam("featureName") String featureName, @RequestParam("featureType") FeatureTypes featureType, @RequestParam("featureContent") String featureContent){
+	public ResponseEntity<String> addFeature(@RequestParam("featureName") String featureName, @RequestParam("featureType") FeatureType featureType, @RequestParam("featureContent") String featureContent){
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
 			return ResponseEntity.ok("Feature: "+featureName+" of type "+featureType+" with value "+featureContent+" has been added");
@@ -97,7 +99,7 @@ public class LicenseController {
 	}
 	
 	@PostMapping("/license/generatekeys")
-	public ResponseEntity<String> generateKeys(@RequestParam("algorithm") EncryptionAlgorithm algorithm, @RequestParam("size") int size){
+	public ResponseEntity<String> generateKeys(@RequestParam("algorithm") String algorithm, @RequestParam("size") int size){
 		try {
 			ls.generate(algorithm, size);
 			return ResponseEntity.ok("Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license");
