@@ -2,6 +2,7 @@ package org.egg.license3j.api.controllers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.service.LicenseService;
@@ -105,6 +106,16 @@ public class LicenseController {
 			return ResponseEntity.ok("Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license");
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+		}
+	}
+	
+	@GetMapping("/license/downloadkeys")
+	public ResponseEntity<File> generateKeys(@RequestParam("privateKeyName") String privateKeyName, @RequestParam("publicKeyName") String publicKeyName, @RequestParam("format") IOFormat format){
+		try {
+			File zippedKeys = ls.saveKeys(privateKeyName, publicKeyName, format);
+			return ResponseEntity.ok().body(zippedKeys);
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body(null);
 		}
 	}
 }

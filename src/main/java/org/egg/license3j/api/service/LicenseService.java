@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import org.egg.license3j.api.constants.FeatureType;
 import org.slf4j.Logger;
@@ -17,8 +18,10 @@ import javax0.license3j.Feature;
 import javax0.license3j.License;
 import javax0.license3j.crypto.LicenseKeyPair;
 import javax0.license3j.io.IOFormat;
+import javax0.license3j.io.KeyPairWriter;
 import javax0.license3j.io.LicenseReader;
 import javax0.license3j.io.LicenseWriter;
+import net.lingala.zip4j.ZipFile;
 
 
 public class LicenseService {
@@ -29,6 +32,27 @@ public class LicenseService {
 	private LicenseKeyPair keyPair;
 	
 	private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
+	
+	// accessory functions
+		public Boolean isLicenseLoaded() {
+			return license != null;
+		}
+		
+		public Boolean licenseRequiresSaving() {
+			return licenseToSave;
+		}
+		
+		public Boolean licenseRequiresSigning() {
+			return licenseToSign;
+		}
+		
+		public Boolean isPrivateKeyLoaded() {
+			return (keyPair != null && keyPair.getPair() != null && keyPair.getPair().getPrivate() != null);
+		}
+		
+		public Boolean isPublicKeyLoaded() {
+			return (keyPair != null && keyPair.getPair() != null && keyPair.getPair().getPublic() != null);
+		}
 	
 	// generate a new license if there are no previously unsaved licenses
 		public void newLicense() throws ResponseStatusException {
@@ -62,7 +86,7 @@ public class LicenseService {
 				return f;
 			} catch (IOException e) {
 				logger.error(e.getMessage(), e);
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occured during writing the license");
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing the license");
 			}
 		}
 		
@@ -78,7 +102,7 @@ public class LicenseService {
 				return baos.toString(StandardCharsets.UTF_8);
 			} catch (IOException e) {
 				logger.error(e.getMessage(), e);
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "A problem occured during writing license bytes");
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing license bytes");
 			}
 		}
 		
@@ -96,7 +120,7 @@ public class LicenseService {
 			} catch (IOException e) {
 				logger.error(String.valueOf(e));
 				e.printStackTrace();
-				throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "A problem occured during loading the license from file");
+				throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "An I/O error occured during loading the license from file");
 			} 
 		}
 		
@@ -129,6 +153,27 @@ public class LicenseService {
 			} catch (NoSuchAlgorithmException e) {
 				logger.error("Algorithm Unavailable", e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, algorithm+" is not available in the environment");
+			}
+		}
+		
+		// return a list of files which contain the key contents previously generated in memory
+		
+		public File saveKeys(String privateKeyName, String publicKeyName, IOFormat format) {
+			
+			if(Boolean.TRUE.equals(!isPrivateKeyLoaded()) || Boolean.TRUE.equals(!isPublicKeyLoaded()))
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either or both of the keys are not loaded");
+			
+			File privateKeyFile = new File(privateKeyName);
+			File publicKeyFile = new File(publicKeyName);
+			
+			try (KeyPairWriter writer = new KeyPairWriter(privateKeyFile, publicKeyFile); ZipFile z = new ZipFile("keys.zip")) {
+				writer.write(keyPair, format);
+				logger.info("Keys have been written for output");		
+				z.addFiles(List.of(privateKeyFile, publicKeyFile));
+				return z.getFile();
+			} catch (IOException e) {
+				logger.error("An I/O error occured during writing keys to files", e);
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing keys to files");
 			}
 		}
 }
