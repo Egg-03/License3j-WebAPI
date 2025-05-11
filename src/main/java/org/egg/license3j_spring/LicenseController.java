@@ -28,7 +28,7 @@ public class LicenseController {
 	 * 
 	 * @return HTTP:200 if license generation is successful, or else an HTTP:400 (Bad Request) if an unsaved license is in memory
 	 */
-	@GetMapping("/license/new")
+	@PostMapping("/license/new")
 	public ResponseEntity<String> generateNewLicense() {
 		try {
 			ls.newLicense();
@@ -91,6 +91,16 @@ public class LicenseController {
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
 			return ResponseEntity.ok("Feature: "+featureName+" of type "+featureType+" with value "+featureContent+" has been added");
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+		}
+	}
+	
+	@PostMapping("/license/generatekeys")
+	public ResponseEntity<String> generateKeys(@RequestParam("algorithm") EncryptionAlgorithm algorithm, @RequestParam("size") String size){
+		try {
+			ls.generate(algorithm, size);
+			return ResponseEntity.ok("Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license");
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}

@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-
+import java.security.NoSuchAlgorithmException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,6 +22,11 @@ enum FeatureTypes{
 	STRING, BINARY, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BIGINTEGER, BIGDECIMAL, DATE, UUID
 }
 
+enum EncryptionAlgorithm {
+	RSA, ECB, PKCS1Padding
+}
+
+
 public class LicenseService {
 	
 	private License license;
@@ -30,7 +35,7 @@ public class LicenseService {
 	private LicenseKeyPair keyPair;
 	
 	private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
-
+	
 	// generate a new license if there are no previously unsaved licenses
 		public void newLicense() throws ResponseStatusException {
 			if (!licenseToSave) {
@@ -112,5 +117,32 @@ public class LicenseService {
 			licenseToSave = true;
 			licenseToSign = true;
 			logger.info("Feature: {} of type {} with content {} has been added to the license. License must be signed before saving.", featureName, type, featureContent);
+		}
+		
+		// will generate a private-key public-key pair and load it in memory
+		private void generateKeys(EncryptionAlgorithm algorithm, int size) throws NoSuchAlgorithmException {
+				keyPair = LicenseKeyPair.Create.from(algorithm.name(), size);
+				logger.info("Private and Public Keys loaded in memory");
+		}
+
+		// will save the loaded keys to file
+		// uses the generateKeys() method internally
+
+		public void generate(EncryptionAlgorithm algorithm, String sizeString) throws ResponseStatusException {
+			
+			final int size;
+			try {
+				size = Integer.parseInt(sizeString);
+			} catch (NumberFormatException e) {
+				logger.error(" {} has to be a positive decimal integer value.", sizeString);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, sizeString+" has to be a positive decimal integer value.");
+			}
+
+			try {
+				generateKeys(algorithm, size);
+			} catch (NoSuchAlgorithmException e) {
+				logger.error("Algorithm Unavailable", e);
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, algorithm+" is not available in the environment");
+			}
 		}
 }
