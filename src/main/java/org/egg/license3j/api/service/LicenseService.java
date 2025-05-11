@@ -5,12 +5,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import org.egg.license3j.api.constants.FeatureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -67,7 +69,7 @@ public class LicenseService {
 		}
 		
 		// save license to file
-		public File saveLicense(String licenseName, IOFormat format) throws ResponseStatusException {
+		public ByteArrayResource saveLicense(String licenseName, IOFormat format) throws ResponseStatusException {
 			if (license == null) {
 				logger.error("No license in memory. Please create or load a license");
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license in memory. Please create or load a license");
@@ -83,7 +85,7 @@ public class LicenseService {
 				writer.write(license, format);
 				licenseToSave = false;
 				logger.info("License Written Successfully");
-				return f;
+				return new ByteArrayResource(Files.readAllBytes(f.toPath()));
 			} catch (IOException e) {
 				logger.error(e.getMessage(), e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing the license");
@@ -158,7 +160,7 @@ public class LicenseService {
 		
 		// return a list of files which contain the key contents previously generated in memory
 		
-		public File saveKeys(String privateKeyName, String publicKeyName, IOFormat format) {
+		public ByteArrayResource saveKeys(String privateKeyName, String publicKeyName, IOFormat format) {
 			
 			if(Boolean.TRUE.equals(!isPrivateKeyLoaded()) || Boolean.TRUE.equals(!isPublicKeyLoaded()))
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either or both of the keys are not loaded");
@@ -170,7 +172,7 @@ public class LicenseService {
 				writer.write(keyPair, format);
 				logger.info("Keys have been written for output");		
 				z.addFiles(List.of(privateKeyFile, publicKeyFile));
-				return z.getFile();
+				return new ByteArrayResource(Files.readAllBytes(z.getFile().toPath()));
 			} catch (IOException e) {
 				logger.error("An I/O error occured during writing keys to files", e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing keys to files");

@@ -1,14 +1,15 @@
 package org.egg.license3j.api.controllers;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.service.LicenseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,21 +46,22 @@ public class LicenseController {
 	
 	// TODO explore further to see how the file is downloaded
 	@GetMapping("/license/save")
-	public ResponseEntity<File> saveLicense(@RequestParam String licenseName, @RequestParam String format) {
-		
-		IOFormat ioformat;
-		switch(format) {
-		case "BINARY", "binary" -> ioformat=IOFormat.BINARY;
-		case "TEXT", "text" -> ioformat=IOFormat.STRING;
-		case "BASE64", "base64" -> ioformat=IOFormat.BASE64;
-		default -> ioformat=IOFormat.BINARY;
-		}
-		
+	public ResponseEntity<Resource> saveLicense(@RequestParam String licenseName, @RequestParam IOFormat format) {
+			
 		try {
-			File f = ls.saveLicense(licenseName, ioformat);
-			return ResponseEntity.ok(f);
+			Resource licenseFile = ls.saveLicense(licenseName, format);
+			HttpHeaders headers = new HttpHeaders();
+	        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+licenseName);
+			return ResponseEntity.ok()
+					.headers(headers)
+					.contentLength(licenseFile.contentLength())
+					.contentType(MediaType.APPLICATION_OCTET_STREAM)
+					.body(licenseFile);
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(null);	
+		} catch (IOException e) {
+			logger.error("An I/O Exception occured during getting content length for the license file", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
 	// example usage: http://localhost:8080/api/license/save?licenseName=egg.bin&format=BINARY
@@ -110,12 +112,22 @@ public class LicenseController {
 	}
 	
 	@GetMapping("/license/downloadkeys")
-	public ResponseEntity<File> generateKeys(@RequestParam("privateKeyName") String privateKeyName, @RequestParam("publicKeyName") String publicKeyName, @RequestParam("format") IOFormat format){
+	public ResponseEntity<Resource> generateKeys(@RequestParam("privateKeyName") String privateKeyName, @RequestParam("publicKeyName") String publicKeyName, @RequestParam("format") IOFormat format){
 		try {
-			File zippedKeys = ls.saveKeys(privateKeyName, publicKeyName, format);
-			return ResponseEntity.ok().body(zippedKeys);
+			Resource zippedKeys = ls.saveKeys(privateKeyName, publicKeyName, format);
+			
+			HttpHeaders headers = new HttpHeaders();
+	        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=keys.zip");
+			return ResponseEntity.ok()
+					.headers(headers)
+					.contentLength(zippedKeys.contentLength())
+					.contentType(MediaType.APPLICATION_OCTET_STREAM)
+					.body(zippedKeys);
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(null);
+		} catch (IOException e) {
+			logger.error("An I/O Exception occured during getting content length for the zipped key files", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
 }
