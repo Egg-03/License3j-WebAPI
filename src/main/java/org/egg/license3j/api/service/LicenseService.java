@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 import org.egg.license3j.api.constants.FeatureType;
@@ -20,6 +21,7 @@ import javax0.license3j.Feature;
 import javax0.license3j.License;
 import javax0.license3j.crypto.LicenseKeyPair;
 import javax0.license3j.io.IOFormat;
+import javax0.license3j.io.KeyPairReader;
 import javax0.license3j.io.KeyPairWriter;
 import javax0.license3j.io.LicenseReader;
 import javax0.license3j.io.LicenseWriter;
@@ -160,7 +162,7 @@ public class LicenseService {
 		
 		// return a list of files which contain the key contents previously generated in memory
 		
-		public ByteArrayResource saveKeys(String privateKeyName, String publicKeyName, IOFormat format) {
+		public ByteArrayResource saveKeys(String privateKeyName, String publicKeyName, IOFormat format) throws ResponseStatusException {
 			
 			if(Boolean.TRUE.equals(!isPrivateKeyLoaded()) || Boolean.TRUE.equals(!isPublicKeyLoaded()))
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either or both of the keys are not loaded");
@@ -176,6 +178,63 @@ public class LicenseService {
 			} catch (IOException e) {
 				logger.error("An I/O error occured during writing keys to files", e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing keys to files");
+			}
+		}
+		
+		private LicenseKeyPair merge(LicenseKeyPair oldKp, LicenseKeyPair newKp) {
+			if (oldKp == null) {
+				return newKp;
+			}
+			final String cipher = oldKp.cipher();
+			if (newKp.getPair().getPublic() != null) {
+				return LicenseKeyPair.Create.from(newKp.getPair().getPublic(), oldKp.getPair().getPrivate(), cipher);
+			}
+			if (newKp.getPair().getPrivate() != null) {
+				return LicenseKeyPair.Create.from(oldKp.getPair().getPublic(), newKp.getPair().getPrivate(), cipher);
+			}
+			return oldKp;
+		}
+
+		// load private key
+		public void loadPrivateKey(InputStream keyFile, IOFormat format) throws ResponseStatusException {
+			if (Boolean.TRUE.equals(isPrivateKeyLoaded())) {
+				logger.info("Private Key in memory will be overriden by a new key loaded from a file.");
+			}
+
+			try (KeyPairReader kpread = new KeyPairReader(keyFile)) {
+				keyPair = merge(keyPair, kpread.readPrivate(format));
+				logger.info("Private Key Loaded");
+			} catch (IOException  e) {
+				logger.error("An I/O error occured while loading private key", e);
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured while loading private key");
+			} catch (InvalidKeySpecException e) {
+				logger.error("An error occured while loading private key", e);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The given key specification is invalid");
+			} catch (NoSuchAlgorithmException e) {
+				logger.error("An error occured while loading private key", e);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The algorithm with which the key was created seems to be unvailable in the current environment.");
+			}
+		}
+
+		// load public key
+		public void loadPublicKey(InputStream keyFile, IOFormat format) throws ResponseStatusException  {
+			if (Boolean.TRUE.equals(isPublicKeyLoaded())) {
+				logger.info("Public Key in memory will be overriden by a new key loaded from a file.");
+			}
+
+
+			try (KeyPairReader kpread = new KeyPairReader(keyFile)) {
+				keyPair = merge(keyPair, kpread.readPublic(format));
+				logger.info("Public Key Loaded");
+			} catch (IOException  e) {
+				logger.error("An I/O error occured while loading public key", e);
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing keys to files");
+			} catch (InvalidKeySpecException e) {
+				logger.error("An error occured while loading public key", e);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The given key specification is invalid");
+			} catch (NoSuchAlgorithmException e) {
+				logger.error("An error occured while loading public key", e);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The algorithm with which the key was created seems to be unvailable in the current environment.");
 			}
 		}
 }

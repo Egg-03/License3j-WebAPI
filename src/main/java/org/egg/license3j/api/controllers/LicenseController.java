@@ -44,7 +44,6 @@ public class LicenseController {
 	
 	// example usage: http://localhost:8080/api/license/new
 	
-	// TODO explore further to see how the file is downloaded
 	@GetMapping("/license/save")
 	public ResponseEntity<Resource> saveLicense(@RequestParam String licenseName, @RequestParam IOFormat format) {
 			
@@ -128,6 +127,32 @@ public class LicenseController {
 		} catch (IOException e) {
 			logger.error("An I/O Exception occured during getting content length for the zipped key files", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
+	@PostMapping("/license/uploadprivatekey")
+	public ResponseEntity<String> uploadPrivateKey(@RequestParam("privateKeyFile") MultipartFile privateKeyFile, @RequestParam IOFormat format) {
+		try {
+			ls.loadPrivateKey(privateKeyFile.getInputStream(), format);
+			return ResponseEntity.ok("Private key loaded in  memory");
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body("Private key could not be read");
+		} catch (IOException e) {
+			logger.error("Private key input stream error", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Public key could not be accessed");
+		}
+	}
+	
+	@PostMapping("/license/uploadpublickey")
+	public ResponseEntity<String> uploadPublicKey(@RequestParam("publicKeyFile") MultipartFile publicKeyFile, @RequestParam IOFormat format) {
+		try {
+			ls.loadPublicKey(publicKeyFile.getInputStream(), format);
+			return ResponseEntity.ok("Public key loaded in  memory");
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body("Public key could not be read");
+		} catch (IOException e) {
+			logger.error("Public key input stream error", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Public key could not be accessed");
 		}
 	}
 }
