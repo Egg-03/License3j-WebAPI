@@ -128,16 +128,8 @@ public class LicenseService {
 		// will save the loaded keys to file
 		// uses the generateKeys() method internally
 
-		public void generate(EncryptionAlgorithm algorithm, String sizeString) throws ResponseStatusException {
+		public void generate(EncryptionAlgorithm algorithm, int size) throws ResponseStatusException {
 			
-			final int size;
-			try {
-				size = Integer.parseInt(sizeString);
-			} catch (NumberFormatException e) {
-				logger.error(" {} has to be a positive decimal integer value.", sizeString);
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, sizeString+" has to be a positive decimal integer value.");
-			}
-
 			try {
 				generateKeys(algorithm, size);
 			} catch (NoSuchAlgorithmException e) {

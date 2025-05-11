@@ -97,7 +97,7 @@ public class LicenseController {
 	}
 	
 	@PostMapping("/license/generatekeys")
-	public ResponseEntity<String> generateKeys(@RequestParam("algorithm") EncryptionAlgorithm algorithm, @RequestParam("size") String size){
+	public ResponseEntity<String> generateKeys(@RequestParam("algorithm") EncryptionAlgorithm algorithm, @RequestParam("size") int size){
 		try {
 			ls.generate(algorithm, size);
 			return ResponseEntity.ok("Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license");
