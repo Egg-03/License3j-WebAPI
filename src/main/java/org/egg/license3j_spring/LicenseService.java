@@ -11,11 +11,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax0.license3j.Feature;
 import javax0.license3j.License;
 import javax0.license3j.crypto.LicenseKeyPair;
 import javax0.license3j.io.IOFormat;
 import javax0.license3j.io.LicenseReader;
 import javax0.license3j.io.LicenseWriter;
+
+enum FeatureTypes{
+	STRING, BINARY, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BIGINTEGER, BIGDECIMAL, DATE, UUID
+}
 
 public class LicenseService {
 	
@@ -95,5 +100,17 @@ public class LicenseService {
 				throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "A problem occured during loading the license from file");
 			} 
 		}
+		
+		// add features to a license
+		public void addFeature(String featureName, FeatureTypes type, String featureContent) throws ResponseStatusException {
+			if (license == null) {
+				logger.error("No license in memory. Feature cannot be added.");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license in memory. Please create or load a license");
+			}
 
+			license.add(Feature.Create.from(featureName+":"+type+"="+featureContent));
+			licenseToSave = true;
+			licenseToSign = true;
+			logger.info("Feature: {} of type {} with content {} has been added to the license. License must be signed before saving.", featureName, type, featureContent);
+		}
 }

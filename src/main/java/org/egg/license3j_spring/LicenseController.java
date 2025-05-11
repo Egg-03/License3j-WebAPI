@@ -34,7 +34,7 @@ public class LicenseController {
 			ls.newLicense();
 			return ResponseEntity.ok("A new license has been generated in memory");
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body("License in memory has not been saved. Please save the license first");
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}
 	}
 	
@@ -67,31 +67,32 @@ public class LicenseController {
 			String license = ls.displayLicense();
 			return ResponseEntity.ok(license);
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body("N/A");
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}
 	}
 	
 	// example usage: http://localhost:8080/api/license/show
 	
 	@PostMapping("/license/upload")
-	public ResponseEntity<String> uploadLicense(@RequestParam("license") MultipartFile license, @RequestParam String format) {
-		
-		IOFormat ioformat;
-		switch(format) {
-		case "BINARY", "binary" -> ioformat=IOFormat.BINARY;
-		case "TEXT", "text" -> ioformat=IOFormat.STRING;
-		case "BASE64", "base64" -> ioformat=IOFormat.BASE64;
-		default -> ioformat=IOFormat.BINARY;
-		}
-		
+	public ResponseEntity<String> uploadLicense(@RequestParam("license") MultipartFile license, @RequestParam IOFormat format) {
 		try {		
-			ls.loadLicense(license.getInputStream(), ioformat);
+			ls.loadLicense(license.getInputStream(), format);
 			return ResponseEntity.ok().body("License loaded from file");
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().toString());
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		} catch (IOException e) {
 			logger.error("License input stream error", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("License could not be accessed");
 		} 
+	}
+	
+	@PostMapping("/license/addfeature")
+	public ResponseEntity<String> addFeature(@RequestParam("featureName") String featureName, @RequestParam("featureType") FeatureTypes featureType, @RequestParam("featureContent") String featureContent){
+		try {
+			ls.addFeature(featureName, featureType, featureContent);
+			return ResponseEntity.ok("Feature: "+featureName+" of type "+featureType+" with value "+featureContent+" has been added");
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+		}
 	}
 }
