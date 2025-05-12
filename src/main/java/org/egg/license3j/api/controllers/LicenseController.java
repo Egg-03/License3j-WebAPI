@@ -22,17 +22,22 @@ import org.springframework.web.server.ResponseStatusException;
 import javax0.license3j.io.IOFormat;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/")
 public class LicenseController {
 	
 	private final LicenseService ls = new LicenseService();
 	private static final Logger logger = LoggerFactory.getLogger(LicenseController.class);
 	
+	@GetMapping("/")
+	public ResponseEntity<String> test() {
+		return ResponseEntity.ok("Active");
+	}
+	
 	/**
 	 * 
 	 * @return HTTP:200 if license generation is successful, or else an HTTP:400 (Bad Request) if an unsaved license is in memory
 	 */
-	@PostMapping("/license/new")
+	@PostMapping("/api/license/new")
 	public ResponseEntity<String> generateNewLicense() {
 		try {
 			ls.newLicense();
@@ -44,7 +49,7 @@ public class LicenseController {
 	
 	// example usage: http://localhost:8080/api/license/new
 	
-	@GetMapping("/license/save")
+	@GetMapping("/api/license/save")
 	public ResponseEntity<Resource> saveLicense(@RequestParam String licenseName, @RequestParam IOFormat format) {
 			
 		try {
@@ -65,7 +70,7 @@ public class LicenseController {
 	}
 	// example usage: http://localhost:8080/api/license/save?licenseName=egg.bin&format=BINARY
 	
-	@GetMapping("/license/show")
+	@GetMapping("/api/license/show")
 	public ResponseEntity<String> showLicense() {
 		try {
 			String license = ls.displayLicense();
@@ -77,7 +82,7 @@ public class LicenseController {
 	
 	// example usage: http://localhost:8080/api/license/show
 	
-	@PostMapping("/license/upload")
+	@PostMapping("/api/license/upload")
 	public ResponseEntity<String> uploadLicense(@RequestParam("license") MultipartFile license, @RequestParam IOFormat format) {
 		try {		
 			ls.loadLicense(license.getInputStream(), format);
@@ -90,7 +95,7 @@ public class LicenseController {
 		} 
 	}
 	
-	@PostMapping("/license/addfeature")
+	@PostMapping("/api/license/addfeature")
 	public ResponseEntity<String> addFeature(@RequestParam("featureName") String featureName, @RequestParam("featureType") FeatureType featureType, @RequestParam("featureContent") String featureContent){
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
@@ -100,7 +105,7 @@ public class LicenseController {
 		}
 	}
 	
-	@PostMapping("/key/generatekeys")
+	@PostMapping("/api/key/generatekeys")
 	public ResponseEntity<String> generateKeys(@RequestParam("algorithm") String algorithm, @RequestParam("size") int size){
 		try {
 			ls.generate(algorithm, size);
@@ -110,7 +115,7 @@ public class LicenseController {
 		}
 	}
 	
-	@GetMapping("/key/downloadkeys")
+	@GetMapping("/api/key/downloadkeys")
 	public ResponseEntity<Resource> downloadKeys(@RequestParam("privateKeyName") String privateKeyName, @RequestParam("publicKeyName") String publicKeyName, @RequestParam("format") IOFormat format){
 		try {
 			Resource zippedKeys = ls.saveKeys(privateKeyName, publicKeyName, format);
@@ -130,7 +135,7 @@ public class LicenseController {
 		}
 	}
 	
-	@PostMapping("/key/uploadprivatekey")
+	@PostMapping("/api/key/uploadprivatekey")
 	public ResponseEntity<String> uploadPrivateKey(@RequestParam("privateKeyFile") MultipartFile privateKeyFile, @RequestParam IOFormat format) {
 		try {
 			ls.loadPrivateKey(privateKeyFile.getInputStream(), format);
@@ -143,7 +148,7 @@ public class LicenseController {
 		}
 	}
 	
-	@PostMapping("/key/uploadpublickey")
+	@PostMapping("/api/key/uploadpublickey")
 	public ResponseEntity<String> uploadPublicKey(@RequestParam("publicKeyFile") MultipartFile publicKeyFile, @RequestParam IOFormat format) {
 		try {
 			ls.loadPublicKey(publicKeyFile.getInputStream(), format);
@@ -156,7 +161,7 @@ public class LicenseController {
 		}
 	}
 	
-	@GetMapping("/key/digestpublickey")
+	@GetMapping("/api/key/digestpublickey")
 	public ResponseEntity<String> digestPublicKey() {
 		try {
 			return ResponseEntity.ok(ls.digestPublicKey());
@@ -165,7 +170,7 @@ public class LicenseController {
 		}
 	}
 	
-	@PostMapping("/license/sign")
+	@PostMapping("/api/license/sign")
 	public ResponseEntity<String> signLicense() {
 		try {
 			ls.signLicense();
@@ -175,7 +180,7 @@ public class LicenseController {
 		}
 	}
 	
-	@GetMapping("/license/verify")
+	@GetMapping("/api/license/verify")
 	public ResponseEntity<String> verifyLicense() {
 		try {
 			String licenseSignStatus = ls.verifyLicense();
@@ -187,27 +192,27 @@ public class LicenseController {
 	
 	//accessory functions
 	
-	@GetMapping("/license/isloaded")
+	@GetMapping("/api/license/isloaded")
 	public ResponseEntity<Boolean> isLicenseLoaded() {
 		return ResponseEntity.ok(ls.isLicenseLoaded());
 	}
 	
-	@GetMapping("/license/requiressigning")
+	@GetMapping("/api/license/requiressigning")
 	public ResponseEntity<Boolean> licenseRequiresSigning() {
 		return ResponseEntity.ok(ls.licenseRequiresSigning());
 	}
 	
-	@GetMapping("/license/requiressaving")
+	@GetMapping("/api/license/requiressaving")
 	public ResponseEntity<Boolean> licenseRequiresSaving() {
 		return ResponseEntity.ok(ls.licenseRequiresSaving());
 	}
 	
-	@GetMapping("/key/isprivatekeyloaded")
+	@GetMapping("/api/key/isprivatekeyloaded")
 	public ResponseEntity<Boolean> isPrivateKeyLoaded() {
 		return ResponseEntity.ok(ls.isPrivateKeyLoaded());
 	}
 	
-	@GetMapping("/key/ispublickeyloaded")
+	@GetMapping("/api/key/ispublickeyloaded")
 	public ResponseEntity<Boolean> isPublicKeyLoaded() {
 		return ResponseEntity.ok(ls.isPublicKeyLoaded());
 	}
