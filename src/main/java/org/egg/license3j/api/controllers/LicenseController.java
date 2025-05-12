@@ -28,6 +28,7 @@ public class LicenseController {
 	private final LicenseService ls = new LicenseService();
 	private static final Logger logger = LoggerFactory.getLogger(LicenseController.class);
 	
+	
 	/**
 	 * 
 	 * @return HTTP:200 if license generation is successful, or else an HTTP:400 (Bad Request) if an unsaved license is in memory
@@ -210,5 +211,10 @@ public class LicenseController {
 	@GetMapping("/key/ispublickeyloaded")
 	public ResponseEntity<Boolean> isPublicKeyLoaded() {
 		return ResponseEntity.ok(ls.isPublicKeyLoaded());
+	}
+	
+	@GetMapping("/healthcheck")
+	public ResponseEntity<String> healthcheck() {
+		return ResponseEntity.ok("Active");
 	}
 }
