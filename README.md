@@ -69,7 +69,9 @@ If you don't want to run it locally, a pre-built demo is also available live on 
 The documentation will use this as its endpoint.
 
 ## Documentation
-*Working on it*
+*Under construction*
+You can view the documentation [here](https://documenter.getpostman.com/view/44835828/2sB2jAbnoH)
+
 ## Contribution
 *Working on it*
 
