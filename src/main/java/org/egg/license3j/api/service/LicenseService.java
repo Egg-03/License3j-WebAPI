@@ -6,9 +6,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import org.egg.license3j.api.constants.FeatureType;
 import org.slf4j.Logger;
@@ -235,6 +241,87 @@ public class LicenseService {
 			} catch (NoSuchAlgorithmException e) {
 				logger.error("An error occured while loading public key", e);
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The algorithm with which the key was created seems to be unvailable in the current environment.");
+			}
+		}
+		
+		// digest public key
+		public String digestPublicKey() throws ResponseStatusException {
+
+			if (keyPair == null) {
+				logger.error("No digestable public key loaded.");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No public key in memory that can be digested.");
+			}
+
+			byte[] publicKey = keyPair.getPublic();
+			MessageDigest digest;
+			try {
+				digest = MessageDigest.getInstance("SHA-512");
+				byte[] calculatedDigest = digest.digest(publicKey);
+
+				StringBuilder javaCode = new StringBuilder("--KEY DIGEST START\nbyte [] digest = new byte[] {\n");
+				for (int i = 0; i < calculatedDigest.length; i++) {
+					int intVal = (calculatedDigest[i]) & 0xff;
+					javaCode.append(String.format("(byte)0x%02X, ", intVal));
+					if (i % 8 == 0) {
+						javaCode.append("\n");
+					}
+				}
+				javaCode.append("\n};\n---KEY DIGEST END\n");
+
+				javaCode.append("--KEY START\nbyte [] key = new byte[] {\n");
+				for (int i = 0; i < publicKey.length; i++) {
+					int intVal = (publicKey[i]) & 0xff;
+					javaCode.append(String.format("(byte)0x%02X, ", intVal));
+					if (i % 8 == 0) {
+						javaCode.append("\n");
+					}
+				}
+				
+				javaCode.append("\n};\n---KEY END\n");
+				return javaCode.toString();
+				
+			} catch (NoSuchAlgorithmException e) {
+				logger.error("Message Digest Algorithm could not be loaded", e);
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Message Digest Algorithm could not be loaded.");
+			}
+
+		}
+		
+		// sign license
+		public void signLicense() throws ResponseStatusException {
+			if (license == null) {
+				logger.error("No license detected in memory. Load or create a license.");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license detected in memory.");
+			} else {
+				try {
+					license.sign(keyPair.getPair().getPrivate(), "SHA-512");
+					logger.info("License Signed. Please save before closing the app");
+					licenseToSave = true;
+		            licenseToSign = false;
+				} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | BadPaddingException
+						| IllegalBlockSizeException e) {
+					logger.error("Signing failed", e);
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed To Sign License ");
+				}
+				
+			}
+		}
+		
+		// verify license
+		public String verifyLicense() {
+			if (license == null) {
+				logger.error("No license loaded in memory to be verified.");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license in memory");
+			}
+			if (Boolean.FALSE.equals(isPublicKeyLoaded())) {
+				logger.error("No public key loaded in memory to be verified with.");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No public key in memory");
+			}
+			
+			if (license.isOK(keyPair.getPair().getPublic())) {
+				return "License is properly signed.";
+			} else {
+				return "License is NOT properly signed.";
 			}
 		}
 }

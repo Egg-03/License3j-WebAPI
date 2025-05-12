@@ -136,7 +136,7 @@ public class LicenseController {
 			ls.loadPrivateKey(privateKeyFile.getInputStream(), format);
 			return ResponseEntity.ok("Private key loaded in  memory");
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body("Private key could not be read");
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		} catch (IOException e) {
 			logger.error("Private key input stream error", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Public key could not be accessed");
@@ -149,10 +149,39 @@ public class LicenseController {
 			ls.loadPublicKey(publicKeyFile.getInputStream(), format);
 			return ResponseEntity.ok("Public key loaded in  memory");
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body("Public key could not be read");
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		} catch (IOException e) {
 			logger.error("Public key input stream error", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Public key could not be accessed");
+		}
+	}
+	
+	@GetMapping("/license/digestpublickey")
+	public ResponseEntity<String> digestPublicKey() {
+		try {
+			return ResponseEntity.ok(ls.digestPublicKey());
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+		}
+	}
+	
+	@PostMapping("/license/sign")
+	public ResponseEntity<String> signLicense() {
+		try {
+			ls.signLicense();
+			return ResponseEntity.ok("License Signed with the keys loaded in memory");
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+		}
+	}
+	
+	@GetMapping("/license/verify")
+	public ResponseEntity<String> verifyLicense() {
+		try {
+			String licenseSignStatus = ls.verifyLicense();
+			return ResponseEntity.ok(licenseSignStatus);
+		} catch (ResponseStatusException e) {
+			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}
 	}
 }
