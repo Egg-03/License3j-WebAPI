@@ -100,7 +100,7 @@ public class LicenseController {
 		}
 	}
 	
-	@PostMapping("/license/generatekeys")
+	@PostMapping("/key/generatekeys")
 	public ResponseEntity<String> generateKeys(@RequestParam("algorithm") String algorithm, @RequestParam("size") int size){
 		try {
 			ls.generate(algorithm, size);
@@ -110,7 +110,7 @@ public class LicenseController {
 		}
 	}
 	
-	@GetMapping("/license/downloadkeys")
+	@GetMapping("/key/downloadkeys")
 	public ResponseEntity<Resource> downloadKeys(@RequestParam("privateKeyName") String privateKeyName, @RequestParam("publicKeyName") String publicKeyName, @RequestParam("format") IOFormat format){
 		try {
 			Resource zippedKeys = ls.saveKeys(privateKeyName, publicKeyName, format);
@@ -130,7 +130,7 @@ public class LicenseController {
 		}
 	}
 	
-	@PostMapping("/license/uploadprivatekey")
+	@PostMapping("/key/uploadprivatekey")
 	public ResponseEntity<String> uploadPrivateKey(@RequestParam("privateKeyFile") MultipartFile privateKeyFile, @RequestParam IOFormat format) {
 		try {
 			ls.loadPrivateKey(privateKeyFile.getInputStream(), format);
@@ -143,7 +143,7 @@ public class LicenseController {
 		}
 	}
 	
-	@PostMapping("/license/uploadpublickey")
+	@PostMapping("/key/uploadpublickey")
 	public ResponseEntity<String> uploadPublicKey(@RequestParam("publicKeyFile") MultipartFile publicKeyFile, @RequestParam IOFormat format) {
 		try {
 			ls.loadPublicKey(publicKeyFile.getInputStream(), format);
@@ -156,7 +156,7 @@ public class LicenseController {
 		}
 	}
 	
-	@GetMapping("/license/digestpublickey")
+	@GetMapping("/key/digestpublickey")
 	public ResponseEntity<String> digestPublicKey() {
 		try {
 			return ResponseEntity.ok(ls.digestPublicKey());
@@ -183,5 +183,32 @@ public class LicenseController {
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}
+	}
+	
+	//accessory functions
+	
+	@GetMapping("/license/isloaded")
+	public ResponseEntity<Boolean> isLicenseLoaded() {
+		return ResponseEntity.ok(ls.isLicenseLoaded());
+	}
+	
+	@GetMapping("/license/requiressigning")
+	public ResponseEntity<Boolean> licenseRequiresSigning() {
+		return ResponseEntity.ok(ls.licenseRequiresSigning());
+	}
+	
+	@GetMapping("/license/requiressaving")
+	public ResponseEntity<Boolean> licenseRequiresSaving() {
+		return ResponseEntity.ok(ls.licenseRequiresSaving());
+	}
+	
+	@GetMapping("/key/isprivatekeyloaded")
+	public ResponseEntity<Boolean> isPrivateKeyLoaded() {
+		return ResponseEntity.ok(ls.isPrivateKeyLoaded());
+	}
+	
+	@GetMapping("/key/ispublickeyloaded")
+	public ResponseEntity<Boolean> isPublicKeyLoaded() {
+		return ResponseEntity.ok(ls.isPublicKeyLoaded());
 	}
 }
