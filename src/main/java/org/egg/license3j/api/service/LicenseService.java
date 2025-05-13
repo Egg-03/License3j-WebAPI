@@ -130,7 +130,7 @@ public class LicenseService {
 			} catch (IOException e) {
 				logger.error(String.valueOf(e));
 				e.printStackTrace();
-				throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "An I/O error occured during loading the license from file");
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during loading the license from file");
 			} 
 		}
 		
@@ -156,13 +156,13 @@ public class LicenseService {
 		// will save the loaded keys to file
 		// uses the generateKeys() method internally
 
-		public void generate(String algorithm, int size) throws ResponseStatusException {
+		public void generate(String cipher, int size) throws ResponseStatusException {
 			
 			try {
-				generateKeys(algorithm, size);
+				generateKeys(cipher, size);
 			} catch (NoSuchAlgorithmException e) {
 				logger.error("Algorithm Unavailable", e);
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, algorithm+" is not available in the environment");
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, cipher+" is not available in the environment");
 			}
 		}
 		
