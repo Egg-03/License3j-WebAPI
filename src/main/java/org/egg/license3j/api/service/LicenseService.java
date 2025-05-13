@@ -292,6 +292,11 @@ public class LicenseService {
 			if (license == null) {
 				logger.error("No license detected in memory. Load or create a license.");
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license detected in memory.");
+				
+			} else if (Boolean.FALSE.equals(isPrivateKeyLoaded())) {
+				logger.error("Private Key not loaded in memory");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No private key detected in memory.");
+				
 			} else {
 				try {
 					license.sign(keyPair.getPair().getPrivate(), "SHA-512");
