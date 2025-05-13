@@ -6,6 +6,7 @@ import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.service.LicenseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,9 +26,13 @@ import javax0.license3j.io.IOFormat;
 @RequestMapping("/api")
 public class LicenseController {
 	
-	private final LicenseService ls = new LicenseService();
+	private final LicenseService ls;
 	private static final Logger logger = LoggerFactory.getLogger(LicenseController.class);
 	
+	@Autowired
+	public LicenseController(LicenseService ls) {
+		this.ls=ls;
+	}
 	
 	/**
 	 * 

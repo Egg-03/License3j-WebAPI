@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.SessionScope;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax0.license3j.Feature;
@@ -33,7 +35,8 @@ import javax0.license3j.io.LicenseReader;
 import javax0.license3j.io.LicenseWriter;
 import net.lingala.zip4j.ZipFile;
 
-
+@Component
+@SessionScope
 public class LicenseService {
 	
 	private License license;
