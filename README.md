@@ -30,6 +30,8 @@ This API can be used in various scenarios, including:
 
 ## Getting Started 
 
+This project assumes that the reader is familiar with how License3j works and can create and apply licenses to their applications using either the [License3j REPL application](https://github.com/verhas/License3jRepl) or the [License3j GUI Application](https://github.com/Egg-03/License3j-GUI). If you are not familiar with how license3j works, the official repository [README](https://github.com/verhas/License3j) has a comprehensive guide on how to use the library. You can also head over to the [License3j REPL Application Readme](https://github.com/verhas/License3jRepl/blob/master/README.md) to acquire more details. If you are already familiar with these, you can skip to the numbered steps.
+
 1.  **Cloning the repository**
 
     Clone the repo locally using Github CLI
@@ -43,15 +45,24 @@ This API can be used in various scenarios, including:
     git clone https://github.com/Egg-03/License3j-WebAPI.git
     ```
     
-2.  **The project uses Maven as it's build tool.**
+2.  **Building the project.**
 
-3.  **Building the project**
+     This project uses Maven as it's build tool.
+    
+     If you don't have Maven installed on your local system or if you don't want to use Maven, there is a wrapper available in the repository itself. Just open your terminal in the 
+     project location and type the following:
 
-      Using Maven:
+     ```
+     ./mvnw clean package
+     ```
+     This will build the project binaries in the `target` folder of the repository.
 
+     If you already have Maven installed, just run the following in the terminal opened in the project location
+    
       ```
       mvn clean package
       ```
+      This will build the project binaries in the `target` folder of the repository as well.
  
 4.  **Running the API locally**
 
@@ -59,7 +70,7 @@ This API can be used in various scenarios, including:
       java -jar license3j-api-x.x.x.jar
       ```
 
-Once the application is running, you can interact with the API endpoints using tools like `curl`, Postman, or a web browser. Check the documentation for the endpoints and the requests that can be made.
+Once the application is running, you can interact with the API endpoints using tools like `curl`, Postman, or a web browser (only for GET methods). Check the documentation for the endpoints and the requests that can be made.
 NOTE: locally running the server requires PORT 8080 to be open and available. You can change the default behavior in `application.properties` available in `src/main/resources`
 
 There is also a Dockerfile available which you can configure yourself to run it as a containerised application.
@@ -69,8 +80,7 @@ If you don't want to run it locally, a pre-built demo is also available live on 
 The documentation will use this as its endpoint.
 
 ## Documentation
-*Under construction*
-You can view the documentation [here](https://documenter.getpostman.com/view/44835828/2sB2jAbnoH)
+You can view the documentation in [Postman](https://documenter.getpostman.com/view/44835828/2sB2jAbnoH)
 
 ## Contribution
 *Working on it*
