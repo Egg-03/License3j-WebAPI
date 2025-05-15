@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.servlet.http.HttpSession;
 import javax0.license3j.io.IOFormat;
 
 @RestController
@@ -221,5 +222,13 @@ public class LicenseController {
 	@GetMapping("/healthcheck")
 	public ResponseEntity<String> healthcheck() {
 		return ResponseEntity.ok("Active");
+	}
+	
+	@GetMapping("/sessionid")
+	public ResponseEntity<String> getSessionId(HttpSession session) {
+		if(session==null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Session Not Found");
+		}
+		return ResponseEntity.ok(session.getId());
 	}
 }
