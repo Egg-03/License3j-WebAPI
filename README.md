@@ -6,15 +6,15 @@ This project provides a RESTful API built with Spring Boot that exposes the func
 
 The API currently supports the following operations:
 
-1.  **Create a fresh license in memory:**
-2.  **Show the license loaded in memory:**
-3.  **Upload an existing license to memory from file:**
-4.  **Add features to new or existing licenses:**
-5.  **Generate private and public keys for signing and verifying new and existing licenses:**
-6.  **Sign and verify licenses:**
-7.  **Download and upload generated keys:**
-8.  **Digest public key into a java code ready byte array:**
-9. **Redownload signed licenses**
+1.  **Create a fresh license in memory**
+2.  **Show the license loaded in memory**
+3.  **Upload an existing license to memory from file**
+4.  **Add features to new or existing licenses**
+5.  **Generate private and public keys for signing and verifying new and existing licenses**
+6.  **Sign and verify licenses**
+7.  **Download and upload generated keys**
+8.  **Digest public key into a java code ready byte array**
+9.  **Redownload signed licenses**
 
 # Use Cases
 
