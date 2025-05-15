@@ -1,8 +1,8 @@
-# License3j Web API
+# About
 
 This project provides a RESTful API built with Spring Boot that exposes the functionalities of the [License3j](https://github.com/verhas/License3j) library over the web. This allows users to perform various license management tasks using standard HTTP requests, making it accessible through web browsers or other HTTP clients.
 
-## Functionalities
+# Functionalities
 
 The API currently supports the following operations:
 
@@ -16,7 +16,7 @@ The API currently supports the following operations:
 8.  **Digest public key into a java code ready byte array:**
 9. **Redownload signed licenses**
 
-## Use Cases
+# Use Cases
 
 This API can be used in various scenarios, including:
 
@@ -24,13 +24,15 @@ This API can be used in various scenarios, including:
 * **Automated License Generation:** Software build processes or deployment pipelines can integrate with this API to automatically generate licenses as part of their workflow.
 * **Centralized License Server:** This API can serve as a central point for managing licenses across different applications and deployments within an organization.
 
-## Security Considerations
+# Security Considerations
 
 **Important:** Currently, this API **does not have any built-in authentication or authorization mechanisms.** 
 
-## Getting Started 
+# Getting Started 
 
 This project assumes that the reader is familiar with how License3j works and can create and apply licenses to their applications using either the [License3j REPL application](https://github.com/verhas/License3jRepl) or the [License3j GUI Application](https://github.com/Egg-03/License3j-GUI). If you are not familiar with how license3j works, the official repository [README](https://github.com/verhas/License3j) has a comprehensive guide on how to use the library. You can also head over to the [License3j REPL Application Readme](https://github.com/verhas/License3jRepl/blob/master/README.md) to acquire more details. If you are already familiar with these, you can skip to the numbered steps.
+
+## Using the API Locally or Self-Hosting it
 
 1.  **Cloning the repository**
 
@@ -66,6 +68,8 @@ This project assumes that the reader is familiar with how License3j works and ca
  
 4.  **Running the API locally**
 
+      Open your terminal in the `target` folder and type the following:
+
       ```
       java -jar license3j-api-x.x.x.jar
       ```
@@ -75,16 +79,20 @@ NOTE: locally running the server requires PORT 8080 to be open and available. Yo
 
 There is also a Dockerfile available which you can configure yourself to run it as a containerised application.
 
-If you don't want to run it locally, a pre-built demo is also available live on Render with the following enpoint configured: https://license3j-api.onrender.com
+## Using a pre-configured endpoint
+
+If you don't want to run it locally, a deployed instance is also available live on Render with the following enpoint configured: https://license3j-api.onrender.com
 
 The documentation will use this as its endpoint.
 
-## Documentation
+# Documentation
+
 You can view the documentation in [Postman](https://documenter.getpostman.com/view/44835828/2sB2jAbnoH)
 
-## Contribution
+# Contribution
+
 *Working on it*
 
-## License
+# License
 
 Licensed under the Apache 2.0 license
