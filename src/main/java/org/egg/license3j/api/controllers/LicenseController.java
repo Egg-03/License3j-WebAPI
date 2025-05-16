@@ -163,7 +163,7 @@ public class LicenseController {
 		}
 	}
 	
-	@GetMapping("/key/digestpublickey")
+	@GetMapping("/key/dumppublickey")
 	public ResponseEntity<String> digestPublicKey() {
 		try {
 			return ResponseEntity.ok(ls.digestPublicKey());
