@@ -66,6 +66,10 @@ public class LicenseService {
 		public Boolean isPublicKeyLoaded() {
 			return (keyPair != null && keyPair.getPair() != null && keyPair.getPair().getPublic() != null);
 		}
+		
+		public Boolean isFileNameValid(String fileName) {
+			return !fileName.contains("..") && !fileName.contains("/") && !fileName.contains("\\");
+		}
 	
 	// generate a new license if there are no previously unsaved licenses
 		public void newLicense() throws ResponseStatusException {
@@ -81,6 +85,11 @@ public class LicenseService {
 		
 		// save license to file
 		public ByteArrayResource saveLicense(String licenseName, IOFormat format) throws ResponseStatusException {
+			
+			if(Boolean.FALSE.equals(isFileNameValid(licenseName))) {
+				throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Invalid File Name");
+			}
+			
 			if (license == null) {
 				logger.error("No license in memory. Please create or load a license");
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No license in memory. Please create or load a license");
@@ -169,9 +178,12 @@ public class LicenseService {
 			}
 		}
 		
-		// return a list of files which contain the key contents previously generated in memory
-		
+		// bundle the keys in a zip format for download
 		public ByteArrayResource saveKeys(String privateKeyName, String publicKeyName, IOFormat format) throws ResponseStatusException {
+			
+			if(Boolean.FALSE.equals(isFileNameValid(privateKeyName) || Boolean.FALSE.equals(isFileNameValid(publicKeyName)))) {
+				throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Invalid Key Names");
+			}
 			
 			if(Boolean.TRUE.equals(!isPrivateKeyLoaded()) || Boolean.TRUE.equals(!isPublicKeyLoaded()))
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either or both of the keys are not loaded");
