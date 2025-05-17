@@ -1,6 +1,8 @@
 package org.egg.license3j.api.controllers;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.service.LicenseService;
@@ -99,9 +101,10 @@ public class LicenseController {
 	
 	@PostMapping("/license/addfeature")
 	public ResponseEntity<String> addFeature(@RequestParam("featureName") String featureName, @RequestParam("featureType") FeatureType featureType, @RequestParam("featureContent") String featureContent){
+		
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
-			return ResponseEntity.ok("Feature: "+featureName+" of type "+featureType+" with value "+featureContent+" has been added");
+			return ResponseEntity.ok("Feature: "+URLEncoder.encode(featureName, StandardCharsets.UTF_8)+" of type "+featureType+" with value "+URLEncoder.encode(featureContent, StandardCharsets.UTF_8)+" has been added");
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}
