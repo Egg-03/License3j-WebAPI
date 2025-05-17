@@ -103,7 +103,7 @@ public class LicenseController {
 		
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
-			return ResponseEntity.ok("Feature: "+StringEscapeUtils.escapeHtml4(featureName)+" of type "+featureType+" with value "+StringEscapeUtils.escapeHtml4(featureContent)+" has been added");
+			return ResponseEntity.ok("Feature: "+StringEscapeUtils.escapeHtml4(featureName)+" of type "+StringEscapeUtils.escapeHtml4(featureType.toString())+" with value "+StringEscapeUtils.escapeHtml4(featureContent)+" has been added");
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}
