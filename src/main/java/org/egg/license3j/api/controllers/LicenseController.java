@@ -1,9 +1,8 @@
 package org.egg.license3j.api.controllers;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.service.LicenseService;
 import org.slf4j.Logger;
@@ -104,7 +103,7 @@ public class LicenseController {
 		
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
-			return ResponseEntity.ok("Feature: "+URLEncoder.encode(featureName, StandardCharsets.UTF_8)+" of type "+featureType+" with value "+URLEncoder.encode(featureContent, StandardCharsets.UTF_8)+" has been added");
+			return ResponseEntity.ok("Feature: "+StringEscapeUtils.escapeHtml4(featureName)+" of type "+featureType+" with value "+StringEscapeUtils.escapeHtml4(featureContent)+" has been added");
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}
