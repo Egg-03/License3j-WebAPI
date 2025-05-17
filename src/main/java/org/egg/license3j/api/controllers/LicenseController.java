@@ -2,6 +2,7 @@ package org.egg.license3j.api.controllers;
 
 import java.io.IOException;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.service.LicenseService;
 import org.slf4j.Logger;
@@ -99,9 +100,10 @@ public class LicenseController {
 	
 	@PostMapping("/license/addfeature")
 	public ResponseEntity<String> addFeature(@RequestParam("featureName") String featureName, @RequestParam("featureType") FeatureType featureType, @RequestParam("featureContent") String featureContent){
+		
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
-			return ResponseEntity.ok("Feature: "+featureName+" of type "+featureType+" with value "+featureContent+" has been added");
+			return ResponseEntity.ok("Feature: "+StringEscapeUtils.escapeHtml4(featureName)+" of type "+StringEscapeUtils.escapeHtml4(featureType.toString())+" with value "+StringEscapeUtils.escapeHtml4(featureContent)+" has been added");
 		} catch (ResponseStatusException e) {
 			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
 		}
