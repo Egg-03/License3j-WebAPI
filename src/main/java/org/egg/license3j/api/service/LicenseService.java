@@ -16,6 +16,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.apache.commons.io.FileUtils;
 import org.egg.license3j.api.constants.FeatureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +106,7 @@ public class LicenseService {
 				writer.write(license, format);
 				licenseToSave = false;
 				logger.info("License Written Successfully");
-				return new ByteArrayResource(Files.readAllBytes(f.toPath()));
+				return new ByteArrayResource(FileUtils.readFileToByteArray(f));
 			} catch (IOException e) {
 				logger.error(e.getMessage(), e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing the license");
