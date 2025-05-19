@@ -18,5 +18,5 @@ VOLUME /tmp
 
 # Copy the JAR from the build stage
 COPY --from=build /app/target/*.jar license3japi.jar
-ENTRYPOINT ["java","-jar","/license3japi.jar --trace"]
+ENTRYPOINT ["java","-jar","/license3japi.jar", " --trace"]
 EXPOSE 8080
