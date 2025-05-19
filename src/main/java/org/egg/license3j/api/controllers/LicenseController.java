@@ -22,6 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import javax0.license3j.io.IOFormat;
 
 @RestController
@@ -36,10 +40,6 @@ public class LicenseController {
 		this.ls=ls;
 	}
 	
-	/**
-	 * 
-	 * @return HTTP:200 if license generation is successful, or else an HTTP:400 (Bad Request) if an unsaved license is in memory
-	 */
 	@PostMapping("/license/new")
 	public ResponseEntity<String> generateNewLicense() {
 		try {
@@ -53,7 +53,9 @@ public class LicenseController {
 	// example usage: http://localhost:8080/api/license/new
 	
 	@GetMapping("/license/save")
-	public ResponseEntity<Resource> saveLicense(@RequestParam String licenseName, @RequestParam IOFormat format) {
+	public ResponseEntity<Resource> saveLicense(
+			@RequestParam @NotBlank String licenseName,
+			@RequestParam IOFormat format) {
 			
 		try {
 			Resource licenseFile = ls.saveLicense(licenseName, format);
@@ -86,7 +88,9 @@ public class LicenseController {
 	// example usage: http://localhost:8080/api/license/show
 	
 	@PostMapping("/license/upload")
-	public ResponseEntity<String> uploadLicense(@RequestParam("license") MultipartFile license, @RequestParam IOFormat format) {
+	public ResponseEntity<String> uploadLicense(
+			@RequestParam("license") @NotNull MultipartFile license, 
+			@RequestParam IOFormat format) {
 		try {		
 			ls.loadLicense(license.getInputStream(), format);
 			return ResponseEntity.ok().body("License loaded from file");
@@ -99,7 +103,10 @@ public class LicenseController {
 	}
 	
 	@PostMapping("/license/addfeature")
-	public ResponseEntity<String> addFeature(@RequestParam("featureName") String featureName, @RequestParam("featureType") FeatureType featureType, @RequestParam("featureContent") String featureContent){
+	public ResponseEntity<String> addFeature(
+			@RequestParam("featureName") @NotBlank String featureName, 
+			@RequestParam("featureType") FeatureType featureType, 
+			@RequestParam("featureContent") @NotBlank String featureContent){
 		
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
@@ -110,7 +117,9 @@ public class LicenseController {
 	}
 	
 	@PostMapping("/key/generatekeys")
-	public ResponseEntity<String> generateKeys(@RequestParam("cipher") String cipher, @RequestParam("size") int size){
+	public ResponseEntity<String> generateKeys(
+			@RequestParam("cipher") @NotBlank String cipher, 
+			@RequestParam("size") @NotNull @Min(1024) @Max(3072) int size) {
 		try {
 			ls.generate(cipher, size);
 			return ResponseEntity.ok("Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license");
@@ -120,7 +129,10 @@ public class LicenseController {
 	}
 	
 	@GetMapping("/key/downloadkeys")
-	public ResponseEntity<Resource> downloadKeys(@RequestParam("privateKeyName") String privateKeyName, @RequestParam("publicKeyName") String publicKeyName, @RequestParam("format") IOFormat format){
+	public ResponseEntity<Resource> downloadKeys(
+			@RequestParam("privateKeyName") @NotBlank String privateKeyName, 
+			@RequestParam("publicKeyName") @NotBlank String publicKeyName, 
+			@RequestParam("format") IOFormat format){
 		try {
 			Resource zippedKeys = ls.saveKeys(privateKeyName, publicKeyName, format);
 			
@@ -140,7 +152,9 @@ public class LicenseController {
 	}
 	
 	@PostMapping("/key/uploadprivatekey")
-	public ResponseEntity<String> uploadPrivateKey(@RequestParam("privateKeyFile") MultipartFile privateKeyFile, @RequestParam IOFormat format) {
+	public ResponseEntity<String> uploadPrivateKey(
+			@RequestParam("privateKeyFile") @NotNull MultipartFile privateKeyFile, 
+			@RequestParam IOFormat format) {
 		try {
 			ls.loadPrivateKey(privateKeyFile.getInputStream(), format);
 			return ResponseEntity.ok("Private key loaded in  memory");
@@ -153,7 +167,9 @@ public class LicenseController {
 	}
 	
 	@PostMapping("/key/uploadpublickey")
-	public ResponseEntity<String> uploadPublicKey(@RequestParam("publicKeyFile") MultipartFile publicKeyFile, @RequestParam IOFormat format) {
+	public ResponseEntity<String> uploadPublicKey(
+			@RequestParam("publicKeyFile") @NotNull MultipartFile publicKeyFile, 
+			@RequestParam IOFormat format) {
 		try {
 			ls.loadPublicKey(publicKeyFile.getInputStream(), format);
 			return ResponseEntity.ok("Public key loaded in  memory");
