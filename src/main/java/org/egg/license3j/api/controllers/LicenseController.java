@@ -90,7 +90,7 @@ public class LicenseController {
 	@PostMapping("/license/upload")
 	public ResponseEntity<String> uploadLicense(
 			@RequestParam("license") @NotNull MultipartFile license, 
-			@RequestParam IOFormat format) {
+			@RequestParam("format") IOFormat format) {
 		try {		
 			ls.loadLicense(license.getInputStream(), format);
 			return ResponseEntity.ok().body("License loaded from file");
@@ -213,28 +213,28 @@ public class LicenseController {
 	//accessory functions
 	
 	@GetMapping("/license/isloaded")
-	public ResponseEntity<Boolean> isLicenseLoaded() {
-		return ResponseEntity.ok(ls.isLicenseLoaded());
+	public ResponseEntity<String> isLicenseLoaded() {
+		return ResponseEntity.ok(String.valueOf(ls.isLicenseLoaded()));
 	}
 	
 	@GetMapping("/license/requiressigning")
-	public ResponseEntity<Boolean> licenseRequiresSigning() {
-		return ResponseEntity.ok(ls.licenseRequiresSigning());
+	public ResponseEntity<String> licenseRequiresSigning() {
+		return ResponseEntity.ok(String.valueOf(ls.licenseRequiresSigning()));
 	}
 	
 	@GetMapping("/license/requiressaving")
-	public ResponseEntity<Boolean> licenseRequiresSaving() {
-		return ResponseEntity.ok(ls.licenseRequiresSaving());
+	public ResponseEntity<String> licenseRequiresSaving() {
+		return ResponseEntity.ok(String.valueOf(ls.licenseRequiresSaving()));
 	}
 	
 	@GetMapping("/key/isprivatekeyloaded")
-	public ResponseEntity<Boolean> isPrivateKeyLoaded() {
-		return ResponseEntity.ok(ls.isPrivateKeyLoaded());
+	public ResponseEntity<String> isPrivateKeyLoaded() {
+		return ResponseEntity.ok(String.valueOf(ls.isPrivateKeyLoaded()));
 	}
 	
 	@GetMapping("/key/ispublickeyloaded")
-	public ResponseEntity<Boolean> isPublicKeyLoaded() {
-		return ResponseEntity.ok(ls.isPublicKeyLoaded());
+	public ResponseEntity<String> isPublicKeyLoaded() {
+		return ResponseEntity.ok(String.valueOf(ls.isPublicKeyLoaded()));
 	}
 	
 	@GetMapping("/healthcheck")
