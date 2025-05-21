@@ -50,8 +50,6 @@ public class LicenseController {
 		}
 	}
 	
-	// example usage: http://localhost:8080/api/license/new
-	
 	@GetMapping("/license/save")
 	public ResponseEntity<Resource> saveLicense(
 			@RequestParam @NotBlank String licenseName,
@@ -73,7 +71,6 @@ public class LicenseController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
-	// example usage: http://localhost:8080/api/license/save?licenseName=egg.bin&format=BINARY
 	
 	@GetMapping("/license/show")
 	public ResponseEntity<String> showLicense() {
@@ -85,7 +82,6 @@ public class LicenseController {
 		}
 	}
 	
-	// example usage: http://localhost:8080/api/license/show
 	
 	@PostMapping("/license/upload")
 	public ResponseEntity<String> uploadLicense(
