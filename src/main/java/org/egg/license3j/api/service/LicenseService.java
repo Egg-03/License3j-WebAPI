@@ -182,7 +182,7 @@ public class LicenseService {
 		// bundle the keys in a zip format for download
 		public ByteArrayResource saveKeys(String privateKeyName, String publicKeyName, IOFormat format) throws ResponseStatusException {
 			
-			if(Boolean.FALSE.equals(isFileNameValid(privateKeyName) || Boolean.FALSE.equals(isFileNameValid(publicKeyName)))) {
+			if(Boolean.FALSE.equals(isFileNameValid(privateKeyName)) || Boolean.FALSE.equals(isFileNameValid(publicKeyName))) {
 				throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Invalid Key Names");
 			}
 			
