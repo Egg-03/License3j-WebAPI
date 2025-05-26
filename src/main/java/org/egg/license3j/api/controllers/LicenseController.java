@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +32,7 @@ import jakarta.validation.constraints.NotNull;
 import javax0.license3j.io.IOFormat;
 
 @RestController
+@Validated
 @RequestMapping("/api")
 public class LicenseController {
 	
@@ -54,7 +56,7 @@ public class LicenseController {
 	
 	@GetMapping("/license/save")
 	public ResponseEntity<Resource> saveLicense(
-			@RequestParam @NotBlank String licenseName,
+			@RequestParam @NotBlank(message = "License name cannot be blank") String licenseName,
 			@RequestParam IOFormat format) {
 			
 		try {
@@ -87,7 +89,7 @@ public class LicenseController {
 	
 	@PostMapping(value = "/license/upload", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, String>> uploadLicense(
-			@RequestParam("license") @NotNull MultipartFile license, 
+			@RequestParam("license") @NotNull(message = "License file cannot be null") MultipartFile license, 
 			@RequestParam("format") IOFormat format) {
 		try {		
 			ls.loadLicense(license.getInputStream(), format);
@@ -102,9 +104,9 @@ public class LicenseController {
 	
 	@PostMapping(value = "/license/addfeature", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, String>> addFeature(
-			@RequestParam("featureName") @NotBlank String featureName, 
+			@RequestParam("featureName") @NotBlank(message = "Feature name cannot be blank") String featureName, 
 			@RequestParam("featureType") FeatureType featureType, 
-			@RequestParam("featureContent") @NotBlank String featureContent){
+			@RequestParam("featureContent") @NotBlank(message = "Feature content cannot be blank") String featureContent){
 		
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
@@ -116,8 +118,8 @@ public class LicenseController {
 	
 	@PostMapping(value = "/key/generatekeys", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, String>> generateKeys(
-			@RequestParam("cipher") @NotBlank String cipher, 
-			@RequestParam("size") @NotNull @Min(1024) @Max(3072) int size) {
+			@RequestParam("cipher") @NotBlank(message = "Cipher specification cannot be blank") String cipher, 
+			@RequestParam("size") @NotNull @Min(value = 1024, message = "Size must be at least 1024") @Max(value = 3072, message = "Size cannot exceed 3072") int size) {
 		try {
 			ls.generate(cipher, size);
 			return ResponseEntity.ok(Collections.singletonMap("status", "Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license"));
@@ -128,8 +130,8 @@ public class LicenseController {
 	
 	@GetMapping("/key/downloadkeys")
 	public ResponseEntity<Resource> downloadKeys(
-			@RequestParam("privateKeyName") @NotBlank String privateKeyName, 
-			@RequestParam("publicKeyName") @NotBlank String publicKeyName, 
+			@RequestParam("privateKeyName") @NotBlank(message = "Private Key name cannot be blank") String privateKeyName, 
+			@RequestParam("publicKeyName") @NotBlank(message = "Public Key name cannot be blank") String publicKeyName, 
 			@RequestParam("format") IOFormat format){
 		try {
 			Resource zippedKeys = ls.saveKeys(privateKeyName, publicKeyName, format);
@@ -151,7 +153,7 @@ public class LicenseController {
 	
 	@PostMapping(value ="/key/uploadprivatekey", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, String>> uploadPrivateKey(
-			@RequestParam("privateKeyFile") @NotNull MultipartFile privateKeyFile, 
+			@RequestParam("privateKeyFile") @NotNull(message = "Private Key file cannot be null") MultipartFile privateKeyFile, 
 			@RequestParam IOFormat format) {
 		try {
 			ls.loadPrivateKey(privateKeyFile.getInputStream(), format);
@@ -166,7 +168,7 @@ public class LicenseController {
 	
 	@PostMapping(value = "/key/uploadpublickey", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, String>> uploadPublicKey(
-			@RequestParam("publicKeyFile") @NotNull MultipartFile publicKeyFile, 
+			@RequestParam("publicKeyFile") @NotNull(message = "Public Key file cannot be null") MultipartFile publicKeyFile, 
 			@RequestParam IOFormat format) {
 		try {
 			ls.loadPublicKey(publicKeyFile.getInputStream(), format);
