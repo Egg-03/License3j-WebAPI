@@ -55,7 +55,7 @@ public class LicenseController {
 	}
 	
 	@GetMapping("/license/save")
-	public ResponseEntity<Resource> saveLicense(
+	public ResponseEntity<Object> saveLicense(
 			@RequestParam @NotBlank(message = "License name cannot be blank") String licenseName,
 			@RequestParam IOFormat format) {
 			
@@ -69,10 +69,10 @@ public class LicenseController {
 					.contentType(MediaType.APPLICATION_OCTET_STREAM)
 					.body(licenseFile);
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(null);	
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));	
 		} catch (IOException e) {
 			logger.error("An I/O Exception occured during getting content length for the license file", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("status", "An I/O Exception occured during getting content length for the license file"));
 		}
 	}
 	
@@ -129,7 +129,7 @@ public class LicenseController {
 	}
 	
 	@GetMapping("/key/downloadkeys")
-	public ResponseEntity<Resource> downloadKeys(
+	public ResponseEntity<Object> downloadKeys(
 			@RequestParam("privateKeyName") @NotBlank(message = "Private Key name cannot be blank") String privateKeyName, 
 			@RequestParam("publicKeyName") @NotBlank(message = "Public Key name cannot be blank") String publicKeyName, 
 			@RequestParam("format") IOFormat format){
@@ -144,10 +144,10 @@ public class LicenseController {
 					.contentType(MediaType.APPLICATION_OCTET_STREAM)
 					.body(zippedKeys);
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(null);
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		} catch (IOException e) {
 			logger.error("An I/O Exception occured during getting content length for the zipped key files", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("status", "An I/O Exception occured during getting content length for the zipped key files"));
 		}
 	}
 	
