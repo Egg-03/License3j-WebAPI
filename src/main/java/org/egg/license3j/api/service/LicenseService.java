@@ -1,7 +1,6 @@
 package org.egg.license3j.api.service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +13,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import org.apache.commons.io.FileUtils;
 import org.egg.license3j.api.constants.FeatureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
