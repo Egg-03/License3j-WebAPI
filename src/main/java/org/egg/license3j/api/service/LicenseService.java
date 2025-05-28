@@ -138,9 +138,9 @@ public class LicenseService {
 				licenseToSave = false;
 				licenseToSign = false;
 				logger.info("License is loaded in memory.");
-			} catch (IOException e) {
-				logger.error("An I/O error occured during loading the license from file", e);
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during loading the license from file");
+			} catch (IOException | IllegalArgumentException e) {
+				logger.error("An error occured during loading the license from file", e);
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occured during loading the license from file");
 			} 
 		}
 		
