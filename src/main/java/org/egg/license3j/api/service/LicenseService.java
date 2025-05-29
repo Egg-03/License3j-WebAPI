@@ -1,22 +1,18 @@
 package org.egg.license3j.api.service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import org.apache.commons.io.FileUtils;
 import org.egg.license3j.api.constants.FeatureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +30,10 @@ import javax0.license3j.io.KeyPairReader;
 import javax0.license3j.io.KeyPairWriter;
 import javax0.license3j.io.LicenseReader;
 import javax0.license3j.io.LicenseWriter;
-import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.io.outputstream.ZipOutputStream;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.CompressionLevel;
+import net.lingala.zip4j.model.enums.CompressionMethod;
 
 @Component
 @SessionScope
@@ -101,12 +100,11 @@ public class LicenseService {
 				throw new ResponseStatusException(HttpStatus.CONFLICT, "License needs to be signed before saving");
 			}
 			
-			File f = new File(licenseName);
-			try (LicenseWriter writer = new LicenseWriter(f)) {
+			try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); LicenseWriter writer = new LicenseWriter(baos)) {
 				writer.write(license, format);
 				licenseToSave = false;
 				logger.info("License Written Successfully");
-				return new ByteArrayResource(FileUtils.readFileToByteArray(f));
+				return new ByteArrayResource(baos.toByteArray());
 			} catch (IOException e) {
 				logger.error(e.getMessage(), e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing the license");
@@ -140,10 +138,9 @@ public class LicenseService {
 				licenseToSave = false;
 				licenseToSign = false;
 				logger.info("License is loaded in memory.");
-			} catch (IOException e) {
-				logger.error(String.valueOf(e));
-				e.printStackTrace();
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during loading the license from file");
+			} catch (IOException | IllegalArgumentException e) {
+				logger.error("An error occured during loading the license from file", e);
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occured during loading the license from file");
 			} 
 		}
 		
@@ -182,21 +179,48 @@ public class LicenseService {
 		// bundle the keys in a zip format for download
 		public ByteArrayResource saveKeys(String privateKeyName, String publicKeyName, IOFormat format) throws ResponseStatusException {
 			
-			if(Boolean.FALSE.equals(isFileNameValid(privateKeyName) || Boolean.FALSE.equals(isFileNameValid(publicKeyName)))) {
+			if(Boolean.FALSE.equals(isFileNameValid(privateKeyName)) || Boolean.FALSE.equals(isFileNameValid(publicKeyName))) {
 				throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Invalid Key Names");
 			}
 			
 			if(Boolean.TRUE.equals(!isPrivateKeyLoaded()) || Boolean.TRUE.equals(!isPublicKeyLoaded()))
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either or both of the keys are not loaded");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either or both of the keys are not loaded");			
 			
-			File privateKeyFile = new File(privateKeyName);
-			File publicKeyFile = new File(publicKeyName);
-			
-			try (KeyPairWriter writer = new KeyPairWriter(privateKeyFile, publicKeyFile); ZipFile z = new ZipFile("keys.zip")) {
+			try (ByteArrayOutputStream privateKeyOutputStream = new ByteArrayOutputStream();
+					ByteArrayOutputStream publicKeyOutputStream = new ByteArrayOutputStream();
+					ByteArrayOutputStream zippedKeysOutputStream = new ByteArrayOutputStream();
+					KeyPairWriter writer = new KeyPairWriter(privateKeyOutputStream, publicKeyOutputStream)) {
+				
 				writer.write(keyPair, format);
-				logger.info("Keys have been written for output");		
-				z.addFiles(List.of(privateKeyFile, publicKeyFile));
-				return new ByteArrayResource(Files.readAllBytes(z.getFile().toPath()));
+				logger.info("Keys have been written for output");
+				
+				try (ZipOutputStream zos = new ZipOutputStream(zippedKeysOutputStream)) {
+
+					// Write private key entry
+					ZipParameters privateParams = new ZipParameters();
+					privateParams.setCompressionMethod(CompressionMethod.DEFLATE);
+					privateParams.setCompressionLevel(CompressionLevel.NORMAL);
+					privateParams.setFileNameInZip(privateKeyName);
+					privateParams.setEntrySize(privateKeyOutputStream.size());
+					privateParams.setLastModifiedFileTime(System.currentTimeMillis());
+					zos.putNextEntry(privateParams);
+					zos.write(privateKeyOutputStream.toByteArray());
+					zos.closeEntry();
+
+					// Write public key entry
+					ZipParameters publicParams = new ZipParameters();
+					publicParams.setCompressionMethod(CompressionMethod.DEFLATE);
+					publicParams.setCompressionLevel(CompressionLevel.NORMAL);
+					publicParams.setFileNameInZip(publicKeyName);
+					publicParams.setEntrySize(publicKeyOutputStream.size());
+					publicParams.setLastModifiedFileTime(System.currentTimeMillis());
+					zos.putNextEntry(publicParams);
+					zos.write(publicKeyOutputStream.toByteArray());
+					zos.closeEntry();
+				}
+
+	                        
+				return new ByteArrayResource(zippedKeysOutputStream.toByteArray());
 			} catch (IOException e) {
 				logger.error("An I/O error occured during writing keys to files", e);
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An I/O error occured during writing keys to files");

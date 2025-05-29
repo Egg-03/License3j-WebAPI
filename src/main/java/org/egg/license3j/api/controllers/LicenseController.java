@@ -1,6 +1,8 @@
 package org.egg.license3j.api.controllers;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.egg.license3j.api.constants.FeatureType;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +32,7 @@ import jakarta.validation.constraints.NotNull;
 import javax0.license3j.io.IOFormat;
 
 @RestController
+@Validated
 @RequestMapping("/api")
 public class LicenseController {
 	
@@ -40,19 +44,19 @@ public class LicenseController {
 		this.ls=ls;
 	}
 	
-	@PostMapping("/license/new")
-	public ResponseEntity<String> generateNewLicense() {
+	@PostMapping(value ="/license/new", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> generateNewLicense() {
 		try {
 			ls.newLicense();
-			return ResponseEntity.ok("A new license has been generated in memory");
+			return ResponseEntity.ok(Collections.singletonMap("status", "A new license has been generated in memory"));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		}
 	}
 	
 	@GetMapping("/license/save")
-	public ResponseEntity<Resource> saveLicense(
-			@RequestParam @NotBlank String licenseName,
+	public ResponseEntity<Object> saveLicense(
+			@RequestParam @NotBlank(message = "License name cannot be blank") String licenseName,
 			@RequestParam IOFormat format) {
 			
 		try {
@@ -65,69 +69,69 @@ public class LicenseController {
 					.contentType(MediaType.APPLICATION_OCTET_STREAM)
 					.body(licenseFile);
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(null);	
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));	
 		} catch (IOException e) {
 			logger.error("An I/O Exception occured during getting content length for the license file", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("status", "An I/O Exception occured during getting content length for the license file"));
 		}
 	}
 	
-	@GetMapping("/license/show")
-	public ResponseEntity<String> showLicense() {
+	@GetMapping(value = "/license/show", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> showLicense() {
 		try {
 			String license = ls.displayLicense();
-			return ResponseEntity.ok(license);
+			return ResponseEntity.ok(Collections.singletonMap("License Info", license));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("License Info", e.getBody().getDetail()));
 		}
 	}
 	
 	
-	@PostMapping("/license/upload")
-	public ResponseEntity<String> uploadLicense(
-			@RequestParam("license") @NotNull MultipartFile license, 
+	@PostMapping(value = "/license/upload", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> uploadLicense(
+			@RequestParam("license") @NotNull(message = "License file cannot be null") MultipartFile license, 
 			@RequestParam("format") IOFormat format) {
 		try {		
 			ls.loadLicense(license.getInputStream(), format);
-			return ResponseEntity.ok().body("License loaded from file");
+			return ResponseEntity.ok().body(Collections.singletonMap("status", "License loaded from file"));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		} catch (IOException e) {
 			logger.error("License input stream error", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("License could not be accessed");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("status", "License could not be read"));
 		} 
 	}
 	
-	@PostMapping("/license/addfeature")
-	public ResponseEntity<String> addFeature(
-			@RequestParam("featureName") @NotBlank String featureName, 
+	@PostMapping(value = "/license/addfeature", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> addFeature(
+			@RequestParam("featureName") @NotBlank(message = "Feature name cannot be blank") String featureName, 
 			@RequestParam("featureType") FeatureType featureType, 
-			@RequestParam("featureContent") @NotBlank String featureContent){
+			@RequestParam("featureContent") @NotBlank(message = "Feature content cannot be blank") String featureContent){
 		
 		try {
 			ls.addFeature(featureName, featureType, featureContent);
-			return ResponseEntity.ok("Feature: "+StringEscapeUtils.escapeHtml4(featureName)+" of type "+StringEscapeUtils.escapeHtml4(featureType.toString())+" with value "+StringEscapeUtils.escapeHtml4(featureContent)+" has been added");
+			return ResponseEntity.ok(Collections.singletonMap("status", "Feature: "+StringEscapeUtils.escapeHtml4(featureName)+" of type "+StringEscapeUtils.escapeHtml4(featureType.toString())+" with value "+StringEscapeUtils.escapeHtml4(featureContent)+" has been added"));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		}
 	}
 	
-	@PostMapping("/key/generatekeys")
-	public ResponseEntity<String> generateKeys(
-			@RequestParam("cipher") @NotBlank String cipher, 
-			@RequestParam("size") @NotNull @Min(1024) @Max(3072) int size) {
+	@PostMapping(value = "/key/generatekeys", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> generateKeys(
+			@RequestParam("cipher") @NotBlank(message = "Cipher specification cannot be blank") String cipher, 
+			@RequestParam("size") @NotNull @Min(value = 1024, message = "Size must be at least 1024") @Max(value = 3072, message = "Size cannot exceed 3072") int size) {
 		try {
 			ls.generate(cipher, size);
-			return ResponseEntity.ok("Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license");
+			return ResponseEntity.ok(Collections.singletonMap("status", "Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license"));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		}
 	}
 	
 	@GetMapping("/key/downloadkeys")
-	public ResponseEntity<Resource> downloadKeys(
-			@RequestParam("privateKeyName") @NotBlank String privateKeyName, 
-			@RequestParam("publicKeyName") @NotBlank String publicKeyName, 
+	public ResponseEntity<Object> downloadKeys(
+			@RequestParam("privateKeyName") @NotBlank(message = "Private Key name cannot be blank") String privateKeyName, 
+			@RequestParam("publicKeyName") @NotBlank(message = "Public Key name cannot be blank") String publicKeyName, 
 			@RequestParam("format") IOFormat format){
 		try {
 			Resource zippedKeys = ls.saveKeys(privateKeyName, publicKeyName, format);
@@ -140,109 +144,109 @@ public class LicenseController {
 					.contentType(MediaType.APPLICATION_OCTET_STREAM)
 					.body(zippedKeys);
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(null);
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		} catch (IOException e) {
 			logger.error("An I/O Exception occured during getting content length for the zipped key files", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("status", "An I/O Exception occured during getting content length for the zipped key files"));
 		}
 	}
 	
-	@PostMapping("/key/uploadprivatekey")
-	public ResponseEntity<String> uploadPrivateKey(
-			@RequestParam("privateKeyFile") @NotNull MultipartFile privateKeyFile, 
+	@PostMapping(value ="/key/uploadprivatekey", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> uploadPrivateKey(
+			@RequestParam("privateKeyFile") @NotNull(message = "Private Key file cannot be null") MultipartFile privateKeyFile, 
 			@RequestParam IOFormat format) {
 		try {
 			ls.loadPrivateKey(privateKeyFile.getInputStream(), format);
-			return ResponseEntity.ok("Private key loaded in  memory");
+			return ResponseEntity.ok(Collections.singletonMap("status", "Private key loaded in memory"));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		} catch (IOException e) {
 			logger.error("Private key input stream error", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Public key could not be accessed");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("status", "Private Key could not be read"));
 		}
 	}
 	
-	@PostMapping("/key/uploadpublickey")
-	public ResponseEntity<String> uploadPublicKey(
-			@RequestParam("publicKeyFile") @NotNull MultipartFile publicKeyFile, 
+	@PostMapping(value = "/key/uploadpublickey", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> uploadPublicKey(
+			@RequestParam("publicKeyFile") @NotNull(message = "Public Key file cannot be null") MultipartFile publicKeyFile, 
 			@RequestParam IOFormat format) {
 		try {
 			ls.loadPublicKey(publicKeyFile.getInputStream(), format);
-			return ResponseEntity.ok("Public key loaded in  memory");
+			return ResponseEntity.ok(Collections.singletonMap("status", "Public key loaded in memory"));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		} catch (IOException e) {
 			logger.error("Public key input stream error", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Public key could not be accessed");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("status", "Public Key could not be read"));
 		}
 	}
 	
-	@GetMapping("/key/dumppublickey")
-	public ResponseEntity<String> digestPublicKey() {
+	@GetMapping(value = "/key/dumppublickey", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> digestPublicKey() {
 		try {
-			return ResponseEntity.ok(ls.digestPublicKey());
+			return ResponseEntity.ok(Collections.singletonMap("publickey", ls.digestPublicKey()));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("publickey", e.getBody().getDetail()));
 		}
 	}
 	
-	@PostMapping("/license/sign")
-	public ResponseEntity<String> signLicense() {
+	@PostMapping(value = "/license/sign", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> signLicense() {
 		try {
 			ls.signLicense();
-			return ResponseEntity.ok("License Signed with the keys loaded in memory");
+			return ResponseEntity.ok(Collections.singletonMap("status", "License Signed with the keys loaded in memory"));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		}
 	}
 	
-	@GetMapping("/license/verify")
-	public ResponseEntity<String> verifyLicense() {
+	@GetMapping(value = "/license/verify", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> verifyLicense() {
 		try {
 			String licenseSignStatus = ls.verifyLicense();
-			return ResponseEntity.ok(licenseSignStatus);
+			return ResponseEntity.ok(Collections.singletonMap("status", licenseSignStatus));
 		} catch (ResponseStatusException e) {
-			return ResponseEntity.status(e.getStatusCode()).body(e.getBody().getDetail());
+			return ResponseEntity.status(e.getStatusCode()).body(Collections.singletonMap("status", e.getBody().getDetail()));
 		}
 	}
 	
 	//accessory functions
 	
-	@GetMapping("/license/isloaded")
-	public ResponseEntity<String> isLicenseLoaded() {
-		return ResponseEntity.ok(String.valueOf(ls.isLicenseLoaded()));
+	@GetMapping(value = "/license/isloaded", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Boolean>> isLicenseLoaded() {
+		return ResponseEntity.ok(Collections.singletonMap("status", ls.isLicenseLoaded()));
 	}
 	
-	@GetMapping("/license/requiressigning")
-	public ResponseEntity<String> licenseRequiresSigning() {
-		return ResponseEntity.ok(String.valueOf(ls.licenseRequiresSigning()));
+	@GetMapping(value = "/license/requiressigning", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Boolean>> licenseRequiresSigning() {
+		return ResponseEntity.ok(Collections.singletonMap("status", ls.licenseRequiresSigning()));
 	}
 	
-	@GetMapping("/license/requiressaving")
-	public ResponseEntity<String> licenseRequiresSaving() {
-		return ResponseEntity.ok(String.valueOf(ls.licenseRequiresSaving()));
+	@GetMapping(value = "/license/requiressaving", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Boolean>> licenseRequiresSaving() {
+		return ResponseEntity.ok(Collections.singletonMap("status", ls.licenseRequiresSaving()));
 	}
 	
-	@GetMapping("/key/isprivatekeyloaded")
-	public ResponseEntity<String> isPrivateKeyLoaded() {
-		return ResponseEntity.ok(String.valueOf(ls.isPrivateKeyLoaded()));
+	@GetMapping(value = "/key/isprivatekeyloaded", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Boolean>> isPrivateKeyLoaded() {
+		return ResponseEntity.ok(Collections.singletonMap("status", ls.isPrivateKeyLoaded()));
 	}
 	
-	@GetMapping("/key/ispublickeyloaded")
-	public ResponseEntity<String> isPublicKeyLoaded() {
-		return ResponseEntity.ok(String.valueOf(ls.isPublicKeyLoaded()));
+	@GetMapping(value = "/key/ispublickeyloaded", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Boolean>> isPublicKeyLoaded() {
+		return ResponseEntity.ok(Collections.singletonMap("status", ls.isPublicKeyLoaded()));
 	}
 	
-	@GetMapping("/healthcheck")
-	public ResponseEntity<String> healthcheck() {
-		return ResponseEntity.ok("Active");
+	@GetMapping(value = "/healthcheck", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> healthcheck() {
+		return ResponseEntity.ok(Collections.singletonMap("status", "active"));
 	}
 	
-	@GetMapping("/sessionid")
-	public ResponseEntity<String> getSessionId(HttpSession session) {
+	@GetMapping(value = "/sessionid", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> getSessionId(HttpSession session) {
 		if(session==null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Session Not Found");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("SessionID", "Not Found"));
 		}
-		return ResponseEntity.ok(session.getId());
+		return ResponseEntity.ok(Collections.singletonMap("SessionID", session.getId()));
 	}
 }
