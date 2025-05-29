@@ -1,4 +1,4 @@
-package org.egg.license3japi.tests.integration;
+package org.egg.license3j.api.tests.integration;
 
 import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.controllers.LicenseController;
@@ -6,6 +6,7 @@ import org.egg.license3j.api.service.LicenseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,6 +43,7 @@ class NewLicenseTest {
 		
 		// expect the licenseToSign signal to return true and licenseToSave signal to return false
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressigning")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
 				.session(session))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(false)));
