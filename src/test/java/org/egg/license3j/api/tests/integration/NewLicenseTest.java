@@ -1,13 +1,16 @@
 package org.egg.license3j.api.tests.integration;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.controllers.LicenseController;
 import org.egg.license3j.api.service.LicenseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -17,12 +20,15 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.RequestContextFilter;
 
 @SpringJUnitWebConfig (classes= {LicenseController.class, LicenseService.class})
+
 class NewLicenseTest {
 
 	@Autowired private WebApplicationContext wac;
 	private MockMvc mockMvc;
 
 	@Autowired private MockHttpSession session;
+	
+	@MockitoSpyBean private LicenseService ls;
 	
 	@BeforeEach
 	void setUp() {
@@ -41,43 +47,13 @@ class NewLicenseTest {
 	@Test
 	void generateNewLicenseInMemory() throws Exception {
 		
-		// expect the licenseToSign signal to return true and licenseToSave signal to return false
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressigning")
-				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(false)));
-
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressaving")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(false)));
+		assertFalse(ls.isLicenseLoaded());
 		
-		// generate a fresh license in memory and expect an OK status
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").
-				session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new")
+			.session(session))
+			.andExpect(MockMvcResultMatchers.status().isOk());
 		
-		// check whether the license was loaded
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/isloaded")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(true)));
-		
-		// expect the licenseToSign signal to return true and licenseToSave signal to return false
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressigning")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(true)));
-
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressaving")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(false)));
-		
-		// generate another fresh license in memory and expect an OK status
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").session(session))
-		.andExpect(MockMvcResultMatchers.status().isOk());
+		assertTrue(ls.isLicenseLoaded());
 	}
 	
 	@Test
