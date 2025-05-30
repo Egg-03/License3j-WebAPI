@@ -74,7 +74,7 @@ This project assumes that the reader is familiar with how License3j works and ca
       java -jar license3j-api-x.x.x.jar
       ```
 
-Once the application is running, you can interact with the API endpoints using tools like `curl`, Postman, or a web browser (only for GET methods). Check the documentation for the endpoints and the requests that can be made.
+Once the application is running, you can interact with the API endpoints using tools like `curl`, Postman, Apidog, or a web browser (only for GET methods). Check the documentation for the endpoints and the requests that can be made.
 NOTE: locally running the server requires PORT 8080 to be open and available. You can change the default behavior in `application.properties` available in `src/main/resources`
 
 There is also a Dockerfile available which you can configure yourself to run it as a containerised application.
@@ -87,7 +87,7 @@ The documentation will use this as its endpoint.
 
 # Documentation
 
-You can view the documentation in [Postman](https://documenter.getpostman.com/view/44835828/2sB2jAbnoH)
+You can view the documentation in [Apidog](https://license3j.apidog.io/)
 
 # Contribution
 
