@@ -10,13 +10,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.RequestContextFilter;
+
+import javax0.license3j.io.IOFormat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -70,6 +74,36 @@ class NewLicenseTest {
 		assertTrue(ls.licenseRequiresSaving());
 
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").session(session))
+				.andExpect(MockMvcResultMatchers.status().isConflict());
+		
+		assertTrue(ls.licenseRequiresSigning());
+		assertTrue(ls.licenseRequiresSaving());
+	}
+	
+	@Test
+	void uploadNewLicenseWhenUnsavedLicenseIsInMemory() throws Exception {
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk());
+
+		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
+
+		ls.addFeature("testFeature", FeatureType.STRING, "testContent");
+
+		assertTrue(ls.licenseRequiresSigning());
+		assertTrue(ls.licenseRequiresSaving());
+		
+		MockMultipartFile mockFile = new MockMultipartFile(
+	            "license",
+	            "license.bin",
+	            MediaType.APPLICATION_OCTET_STREAM.toString(), // or specific MediaType like MediaType.IMAGE_JPEG.toString()
+	            NewLicenseTest.class.getResourceAsStream("/license.bin").readAllBytes()
+	        );
+
+		mockMvc.perform(MockMvcRequestBuilders.multipart("/api/license/upload")
+				.file(mockFile)
+				.param("format", IOFormat.BINARY.name())
+				.session(session))
 				.andExpect(MockMvcResultMatchers.status().isConflict());
 		
 		assertTrue(ls.licenseRequiresSigning());
