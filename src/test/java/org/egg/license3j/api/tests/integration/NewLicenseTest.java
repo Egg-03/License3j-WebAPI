@@ -4,14 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.egg.license3j.api.constants.FeatureType;
-import org.egg.license3j.api.controllers.LicenseController;
 import org.egg.license3j.api.service.LicenseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -19,8 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.RequestContextFilter;
 
-@SpringJUnitWebConfig (classes= {LicenseController.class, LicenseService.class})
-
+@SpringBootTest
+@AutoConfigureMockMvc
 class NewLicenseTest {
 
 	@Autowired private WebApplicationContext wac;
@@ -28,7 +27,7 @@ class NewLicenseTest {
 
 	@Autowired private MockHttpSession session;
 	
-	@MockitoSpyBean private LicenseService ls;
+	@Autowired private LicenseService ls;
 	
 	@BeforeEach
 	void setUp() {
@@ -46,61 +45,34 @@ class NewLicenseTest {
 	
 	@Test
 	void generateNewLicenseInMemory() throws Exception {
-		
-		assertFalse(ls.isLicenseLoaded());
-		
+			
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new")
 			.session(session))
 			.andExpect(MockMvcResultMatchers.status().isOk());
 		
+		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
 		assertTrue(ls.isLicenseLoaded());
+		assertTrue(ls.licenseRequiresSigning());
+		assertFalse(ls.licenseRequiresSaving());
 	}
 	
 	@Test
 	void generateNewLicenseWhenUnsavedLicenseIsInMemory() throws Exception {
-		
-		// try creating a fresh license in memory via the controller end-point and expect an OK status
-		
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk());
-		
-		// try adding features to the fresh license via the controller end-point and expect an OK status
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/addfeature")
-				.param("featureName", "MockFeature")
-				.param("featureType", FeatureType.STRING.name())
-				.param("featureContent", "MockContent")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk());
-		
-		// expect the licenseToSign and licenseToSave signals to return true
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressigning")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(true)));
-		
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressaving")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(true)));
-		
-		
-		// try creating another license in memory over the unsaved license, via the controller end-point and expect a conflict
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isConflict())
-				.andExpect(MockMvcResultMatchers.content().string("An unsaved license is detected. Please save it first."));
-		
-		
-		// make sure that conflict does not change the state of the license signals
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressigning")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(true)));
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/license/requiressaving")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().string(String.valueOf(true)));
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk());
+
+		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
+
+		ls.addFeature("testFeature", FeatureType.STRING, "testContent");
+
+		assertTrue(ls.licenseRequiresSigning());
+		assertTrue(ls.licenseRequiresSaving());
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").session(session))
+				.andExpect(MockMvcResultMatchers.status().isConflict());
+		
+		assertTrue(ls.licenseRequiresSigning());
+		assertTrue(ls.licenseRequiresSaving());
 	}
 }
