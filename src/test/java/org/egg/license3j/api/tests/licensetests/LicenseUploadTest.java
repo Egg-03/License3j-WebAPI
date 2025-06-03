@@ -101,7 +101,7 @@ class LicenseUploadTest {
 		
 		MockMultipartFile mockFile = new MockMultipartFile(
 	            "license",
-	            "license.bin",
+	            "InvalidLicense.bin",
 	            MediaType.APPLICATION_OCTET_STREAM.toString(),
 	            NewLicenseTest.class.getResourceAsStream("/InvalidLicense.bin").readAllBytes()
 	        );
