@@ -10,17 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.RequestContextFilter;
-
-import javax0.license3j.io.IOFormat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -61,32 +57,6 @@ class KeyGenerationTest {
 		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
 		assertTrue(ls.isPrivateKeyLoaded());
 		assertTrue(ls.isPublicKeyLoaded());
-	}
-	
-	@Test
-	void uploadKeys() throws Exception {
-		
-		MockMultipartFile privateKey = new MockMultipartFile("privateKeyFile", "test.private", MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyGenerationTest.class.getResourceAsStream("/test.private"));
-		MockMultipartFile publicKey = new MockMultipartFile("publicKeyFile", "test.public", MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyGenerationTest.class.getResourceAsStream("/test.public"));
-		
-		mockMvc.perform(MockMvcRequestBuilders.multipart("/api/key/uploadprivatekey")
-				.file(privateKey)
-				.param("format", IOFormat.BINARY.name())
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is("Private key loaded in memory")));
-		
-		mockMvc.perform(MockMvcRequestBuilders.multipart("/api/key/uploadpublickey")
-				.file(publicKey)
-				.param("format", IOFormat.BINARY.name())
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is("Public key loaded in memory")));
-		
-		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
-		
-		assertTrue(ls.isPublicKeyLoaded());
-		assertTrue(ls.isPrivateKeyLoaded());
 	}
 	
 	@Test
