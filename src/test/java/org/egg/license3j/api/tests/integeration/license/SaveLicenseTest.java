@@ -1,4 +1,4 @@
-package org.egg.license3j.api.tests.integeration.licensetests;
+package org.egg.license3j.api.tests.integeration.license;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

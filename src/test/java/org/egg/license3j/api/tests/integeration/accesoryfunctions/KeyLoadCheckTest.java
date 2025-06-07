@@ -1,9 +1,5 @@
-package org.egg.license3j.api.tests.integeration.keymanagementtests;
+package org.egg.license3j.api.tests.integeration.accesoryfunctions;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.egg.license3j.api.service.LicenseService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +20,7 @@ import javax0.license3j.io.IOFormat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class KeyUploadTest {
+class KeyLoadCheckTest {
 
 	@Autowired
 	private WebApplicationContext wac;
@@ -32,10 +28,7 @@ class KeyUploadTest {
 
 	@Autowired
 	private MockHttpSession session;
-
-	@Autowired
-	private LicenseService ls;
-
+	
 	@BeforeEach
 	void setUp() {
 
@@ -49,12 +42,34 @@ class KeyUploadTest {
 	}
 
 	@Test
-	void uploadKeys() throws Exception {
+	void freshKeyLoadCheck() throws Exception {
 
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/key/generatekeys")
+				.param("cipher", "RSA/ECB/PKCS1Padding")
+				.param("size", String.valueOf(1024))
+				.session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is("Keys have been generated in memory. Download and save them to a secure location if you plan to use them for signing a license")));
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/key/isprivatekeyloaded")
+				.session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(true)));
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/key/ispublickeyloaded")
+				.session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(true)));
+		
+	}
+	
+	@Test
+	void existingKeyLoadCheck() throws Exception {
+		
 		MockMultipartFile privateKey = new MockMultipartFile("privateKeyFile", "test.private",
-				MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyGenerationTest.class.getResourceAsStream("/test.private"));
+				MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyLoadCheckTest.class.getResourceAsStream("/test.private"));
 		MockMultipartFile publicKey = new MockMultipartFile("publicKeyFile", "test.public",
-				MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyGenerationTest.class.getResourceAsStream("/test.public"));
+				MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyLoadCheckTest.class.getResourceAsStream("/test.public"));
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/api/key/uploadprivatekey").file(privateKey)
 				.param("format", IOFormat.BINARY.name()).session(session))
@@ -65,20 +80,26 @@ class KeyUploadTest {
 				.param("format", IOFormat.BINARY.name()).session(session))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is("Public key loaded in memory")));
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/key/isprivatekeyloaded")
+				.session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(true)));
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/key/ispublickeyloaded")
+				.session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(true)));
 
-		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
-
-		assertTrue(ls.isPublicKeyLoaded());
-		assertTrue(ls.isPrivateKeyLoaded());
 	}
 	
 	@Test
-	void uploadInvalidKeys() throws Exception {
-
+	void invalidKeyLoadCheck() throws Exception {
+		
 		MockMultipartFile privateKey = new MockMultipartFile("privateKeyFile", "test.private",
-				MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyGenerationTest.class.getResourceAsStream("/test.public"));
+				MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyLoadCheckTest.class.getResourceAsStream("/test.public"));
 		MockMultipartFile publicKey = new MockMultipartFile("publicKeyFile", "test.public",
-				MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyGenerationTest.class.getResourceAsStream("/test.private"));
+				MediaType.APPLICATION_OCTET_STREAM_VALUE, KeyLoadCheckTest.class.getResourceAsStream("/test.private"));
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/api/key/uploadprivatekey").file(privateKey)
 				.param("format", IOFormat.BINARY.name()).session(session))
@@ -89,10 +110,17 @@ class KeyUploadTest {
 				.param("format", IOFormat.BINARY.name()).session(session))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is("The given key specification is invalid")));
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/key/isprivatekeyloaded")
+				.session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(false)));
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/key/ispublickeyloaded")
+				.session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(false)));
 
-		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
-
-		assertFalse(ls.isPublicKeyLoaded());
-		assertFalse(ls.isPrivateKeyLoaded());
 	}
 }
+

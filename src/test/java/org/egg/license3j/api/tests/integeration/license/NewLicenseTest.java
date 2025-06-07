@@ -1,4 +1,4 @@
-package org.egg.license3j.api.tests.integeration.licensetests;
+package org.egg.license3j.api.tests.integeration.license;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,7 +24,7 @@ import javax0.license3j.io.IOFormat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class AddFeatureTest {
+class NewLicenseTest {
 
 	@Autowired private WebApplicationContext wac;
 	private MockMvc mockMvc;
@@ -48,26 +48,50 @@ class AddFeatureTest {
 	}
 	
 	@Test
-	void addFeature() throws Exception {
+	void generateNewLicenseInMemory() throws Exception {
+			
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new")
-				.session(session))
+			.session(session))
+			.andExpect(MockMvcResultMatchers.status().isOk());
+		
+		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
+		assertTrue(ls.isLicenseLoaded());
+		assertTrue(ls.licenseRequiresSigning());
+		assertFalse(ls.licenseRequiresSaving());
+	}
+	
+	@Test
+	void generateNewLicenseWhenUnsavedLicenseIsInMemory() throws Exception {
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").session(session))
 				.andExpect(MockMvcResultMatchers.status().isOk());
-			
-			ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
-			
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/addfeature")
-				.param("featureName", "TestFeature")
-				.param("featureType", FeatureType.STRING.name())
-				.param("featureContent", "TestContent")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+
+		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
+
+		ls.addFeature("testFeature", FeatureType.STRING, "testContent");
+
+		assertTrue(ls.licenseRequiresSigning());
+		assertTrue(ls.licenseRequiresSaving());
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").session(session))
+				.andExpect(MockMvcResultMatchers.status().isConflict());
 		
 		assertTrue(ls.licenseRequiresSigning());
 		assertTrue(ls.licenseRequiresSaving());
 	}
 	
 	@Test
-	void addFeatureToUploadedLicense() throws Exception {
+	void uploadNewLicenseWhenUnsavedLicenseIsInMemory() throws Exception {
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new").session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk());
+
+		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
+
+		ls.addFeature("testFeature", FeatureType.STRING, "testContent");
+
+		assertTrue(ls.licenseRequiresSigning());
+		assertTrue(ls.licenseRequiresSaving());
 		
 		MockMultipartFile mockFile = new MockMultipartFile(
 	            "license",
@@ -80,47 +104,9 @@ class AddFeatureTest {
 				.file(mockFile)
 				.param("format", IOFormat.BINARY.name())
 				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk());
-			
-			ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
-			
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/addfeature")
-				.param("featureName", "TestFeature")
-				.param("featureType", FeatureType.STRING.name())
-				.param("featureContent", "TestContent")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isConflict());
 		
 		assertTrue(ls.licenseRequiresSigning());
 		assertTrue(ls.licenseRequiresSaving());
-	}
-	
-	@Test
-	void addFeatureWhenNoLicenseInMemory() throws Exception {
-		
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/addfeature")
-				.param("featureName", "TestFeature")
-				.param("featureType", FeatureType.STRING.name())
-				.param("featureContent", "TestContent")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isBadRequest());
-		
-		ls = (LicenseService) session.getAttribute("scopedTarget.licenseService");
-		assertFalse(ls.isLicenseLoaded());
-	}
-	
-	@Test
-	void addEmptyFeatures() throws Exception {
-		
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/new")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isOk());
-		
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/license/addfeature")
-				.param("featureName", "")
-				.param("featureType", FeatureType.STRING.name())
-				.param("featureContent", "")
-				.session(session))
-				.andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
 }

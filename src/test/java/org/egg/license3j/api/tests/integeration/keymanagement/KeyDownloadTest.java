@@ -1,4 +1,4 @@
-package org.egg.license3j.api.tests.integeration.keymanagementtests;
+package org.egg.license3j.api.tests.integeration.keymanagement;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

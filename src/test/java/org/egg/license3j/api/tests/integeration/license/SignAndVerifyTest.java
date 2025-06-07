@@ -1,4 +1,4 @@
-package org.egg.license3j.api.tests.integeration.licensetests;
+package org.egg.license3j.api.tests.integeration.license;
 
 import org.egg.license3j.api.constants.FeatureType;
 import org.egg.license3j.api.service.LicenseService;
