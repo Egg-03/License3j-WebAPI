@@ -2,6 +2,7 @@ package org.egg.license3j.api.controllers;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -249,4 +250,17 @@ public class LicenseController {
 		}
 		return ResponseEntity.ok(Collections.singletonMap("SessionID", session.getId()));
 	}
+	
+	// custom end-point to get a badge from shield.io showing its status
+	@GetMapping(value = "/shieldio", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, String>> shieldio() {
+		Map<String, String> response = new LinkedHashMap<>();
+		response.put("schemaVersion", "1");
+		response.put("label", "API Status");
+		response.put("message", "Active");
+		response.put("color", "green");
+		
+		return ResponseEntity.ok(response);
+	}
+	
 }
