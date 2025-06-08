@@ -253,9 +253,9 @@ public class LicenseController {
 	
 	// custom end-point to get a badge from shield.io showing its status
 	@GetMapping(value = "/shieldio", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, String>> shieldio() {
-		Map<String, String> response = new LinkedHashMap<>();
-		response.put("schemaVersion", "1");
+	public ResponseEntity<Map<String, Object>> shieldio() {
+		Map<String, Object> response = new LinkedHashMap<>();
+		response.put("schemaVersion", 1);
 		response.put("label", "API Status");
 		response.put("message", "Active");
 		response.put("color", "green");
