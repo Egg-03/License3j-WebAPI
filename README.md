@@ -56,7 +56,7 @@ This project assumes that the reader is familiar with how License3j works and ca
     git clone https://github.com/Egg-03/License3j-WebAPI.git
     ```
     
-2.  **Building the project.**
+2.  **Building the project / Downloading pre-built binaries.**
 
      This project uses Maven as it's build tool.
     
@@ -74,6 +74,8 @@ This project assumes that the reader is familiar with how License3j works and ca
       mvn clean package
       ```
       This will build the project binaries in the `target` folder of the repository as well.
+
+      Alternatively, you may check out our [Releases](https://github.com/Egg-03/License3j-WebAPI/releases/latest) page to download pre-built binaries.
  
 4.  **Running the API locally**
 
