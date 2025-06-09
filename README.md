@@ -1,6 +1,12 @@
+# Stats
+![Build](https://img.shields.io/github/actions/workflow/status/Egg-03/License3j-WebAPI/.github%2Fworkflows%2Fmaven_build.yml?style=for-the-badge)
+![Tests](https://img.shields.io/github/actions/workflow/status/Egg-03/License3j-WebAPI/.github%2Fworkflows%2Fmaven_tests.yml?style=for-the-badge&label=Tests)
+[![Endpoint Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Flicense3j-api.onrender.com%2Fapi%2Fshieldio&style=for-the-badge)](https://yfdkkl4n.status.cron-job.org/)
+
+
 # About
 
-This project provides a RESTful API built with Spring Boot that exposes the functionalities of the [License3j](https://github.com/verhas/License3j) library over the web. This allows users to perform various license management tasks using standard HTTP requests, making it accessible through web browsers or other HTTP clients.
+This project provides a RESTful API built with Spring Boot that exposes the functionalities of the [License3j](https://github.com/verhas/License3j) library over the web.
 
 # Functionalities
 
