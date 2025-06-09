@@ -2,6 +2,7 @@
 ![Build](https://img.shields.io/github/actions/workflow/status/Egg-03/License3j-WebAPI/.github%2Fworkflows%2Fmaven_build.yml?style=for-the-badge)
 ![Tests](https://img.shields.io/github/actions/workflow/status/Egg-03/License3j-WebAPI/.github%2Fworkflows%2Fmaven_tests.yml?style=for-the-badge&label=Tests)
 [![Endpoint Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Flicense3j-api.onrender.com%2Fapi%2Fshieldio&style=for-the-badge)](https://yfdkkl4n.status.cron-job.org/)
+![Codecov](https://img.shields.io/codecov/c/gh/Egg-03/License3j-WebAPI?token=170O0RU7FD&style=for-the-badge)
 
 
 # About
