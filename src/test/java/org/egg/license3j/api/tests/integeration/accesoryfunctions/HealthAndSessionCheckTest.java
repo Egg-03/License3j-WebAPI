@@ -54,4 +54,15 @@ class HealthAndSessionCheckTest {
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.SessionID", Matchers.is(session.getId())));
 	}
+	
+	@Test
+	void ioshieldCheck() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/shieldio")
+				.session(session))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.schemaVersion", Matchers.is(1)))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.label", Matchers.is("API Status")))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.message", Matchers.is("Active")))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.color", Matchers.is("green")));
+	}
 }
